@@ -2,6 +2,12 @@
 ![Easily integrate Shopify with Craft CMS!](./resources/banner.jpg)
 
 ### TODO
+- [ ] Create endpoints for the following webhooks:
+  - [ ] Collection Create / Update / Delete
+  - [ ] Product Create / Update / Delete
+  - [ ] Inventory item Update?
+  - [ ] Inventory level Update?
+
 #### MVP
 - [ ] Dynamically create / remove entries based on Shopify products (entries disabled by default)
 - [ ] Dynamically create / remove categories based on Shopify collections (categories disabled by default)
