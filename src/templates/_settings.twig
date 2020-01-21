@@ -1,0 +1,37 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.autosuggestField({
+	first: true,
+	label: "Shopify Storefront Access Token",
+	name: 'shopifyStorefrontAccessToken',
+	instructions: 'Click **[here](https://help.shopify.com/en/api/storefront-api/getting-started#private-app)** for instructions on how to get your access token',
+	value: settings.shopifyStorefrontAccessToken,
+	required: true,
+	suggestEnvVars: true,
+	errors: settings.getErrors('shopifyStorefrontAccessToken'),
+}) }}
+
+{{ forms.selectField({
+	label: 'Product Entry Type',
+	instructions: 'The entry type that will be automatically populated by Shopify products',
+	name: 'productEntryTypeUid',
+	options: entryTypeOptions,
+	value: settings.productEntryTypeUid,
+	required: true,
+}) }}
+
+{{ forms.selectField({
+	label: 'Collection Category Group',
+	instructions: 'The category group that will be automatically populated by Shopify collections',
+	name: 'collectionCategoryGroupUid',
+	options: categoryGroupOptions,
+	value: settings.collectionCategoryGroupUid,
+}) }}
+
+{{ forms.selectField({
+	label: 'Collection Category Field',
+	instructions: 'The collection category field on the products',
+	name: 'collectionCategoryFieldUid',
+	options: categoryFieldOptions,
+	value: settings.collectionCategoryFieldUid,
+}) }}

@@ -1,5 +1,5 @@
 # Storefront
-Easily integrate Shopify with Craft CMS!
+![Easily integrate Shopify with Craft CMS!](./resources/banner.jpg)
 
 ### TODO
 #### MVP
@@ -11,3 +11,4 @@ Easily integrate Shopify with Craft CMS!
 
 #### Nice to have
 - [ ] Allow basic editing of Shopify products in craft (i.e. title)
+- [ ] Widgets showing various sales metrics
