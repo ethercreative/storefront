@@ -1,0 +1,7 @@
+[*]
+tab_width = 4
+indent_style = tab
+
+[{*.yml,*.json}]
+tab_width = 2
+indent_style = space

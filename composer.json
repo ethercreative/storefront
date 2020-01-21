@@ -1,0 +1,31 @@
+{
+  "name": "ether/storefront",
+  "description": "Easily integrate Shopify with Craft CMS!",
+  "version": "1.0.0",
+  "type": "craft-plugin",
+  "license": "proprietary",
+  "minimum-stability": "dev",
+  "require": {
+    "craftcms/cms": "^3.2.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "ether\\storefront\\": "src/"
+    }
+  },
+  "support": {
+    "email": "help@ethercreative.co.uk",
+    "docs": "https://docs.ethercreative.co.uk/storefront",
+    "source": "https://github.com/ethercreative/storefront",
+    "issues": "https://github.com/ethercreative/storefront/issues"
+  },
+  "extra": {
+    "handle": "storefront",
+    "name": "Storefront",
+    "developer": "Ether Creative",
+    "developerUrl": "https://ethercreative.co.uk",
+
+    "class": "ether\\storefront\\Storefront",
+    "schemaVersion": "1.0.0"
+  }
+}
