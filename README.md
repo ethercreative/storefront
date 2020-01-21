@@ -7,6 +7,7 @@
   - [ ] Product Create / Update / Delete
   - [ ] Inventory item Update?
   - [ ] Inventory level Update?
+  - [ ] Add utility to automatically add the webhooks (will need more API access)
 - [ ] Add manual sync utilities
 
 #### MVP
