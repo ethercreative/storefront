@@ -7,6 +7,7 @@
   - [ ] Product Create / Update / Delete
   - [ ] Inventory item Update?
   - [ ] Inventory level Update?
+- [ ] Add manual sync utilities
 
 #### MVP
 - [ ] Dynamically create / remove entries based on Shopify products (entries disabled by default)
