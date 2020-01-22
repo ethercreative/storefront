@@ -1,0 +1,34 @@
+<style>
+	.shopify-wrap {
+		padding: 27px;
+		border: 1px solid #eee;
+		border-radius: 5px;
+	}
+</style>
+
+{# gql is the name of the variable #}
+{# with {} is an optional object of variables #}
+{# as admin means run this command using the admin api rather than the storefront api #}
+{# TODO: add caching? or let {% cache %} handle it? #}
+{% shopify gql with {
+	id: id
+} as admin %}
+	query GetProduct ($id: ID!) {
+		product (id: $id) {
+			title
+			descriptionHtml
+		}
+	}
+{% endshopify %}
+
+{# TODO: error handling #}
+
+<div id="tab-shopify" class="hidden">
+	<div class="shopify-wrap">
+		{% if 'errors' in gql|keys %}
+			<pre><code>{{ dump(gql.errors) }}</code></pre>
+		{% else %}
+			<p><strong>{{ gql.data.product.title }}</strong></p>
+		{% endif %}
+	</div>
+</div>

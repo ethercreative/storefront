@@ -11,6 +11,27 @@
 	errors: settings.getErrors('shopifyStorefrontAccessToken'),
 }) }}
 
+{{ forms.autosuggestField({
+	label: "Shopify Admin API Password",
+	name: 'shopifyAdminApiPassword',
+	instructions: 'Click **[here](https://help.shopify.com/en/api/graphql-admin-api/getting-started#authentication)** for instructions on how to get your admin API password',
+	value: settings.shopifyAdminApiPassword,
+	required: true,
+	suggestEnvVars: true,
+	errors: settings.getErrors('shopifyAdminApiPassword'),
+}) }}
+
+{{ forms.autosuggestField({
+	label: "Shop Handle",
+	name: 'shopHandle',
+	instructions: 'Your Shopify shop handle. To update this you must re-install the plugin.',
+	value: settings.shopHandle,
+	required: true,
+	suggestEnvVars: true,
+	errors: settings.getErrors('shopHandle'),
+	disabled: settings.shopHandle is not empty,
+}) }}
+
 {{ forms.selectField({
 	label: 'Product Entry Type',
 	instructions: 'The entry type that will be automatically populated by Shopify products',

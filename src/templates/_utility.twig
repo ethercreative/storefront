@@ -1,0 +1,19 @@
+{% import "_includes/forms" as forms %}
+
+{% set webhookBtn %}
+	<form method="post">
+		{{ csrfInput() }}
+		{{ actionInput('storefront/setup/webhooks') }}
+		<input
+			type="submit"
+			class="btn {{ not settings.shopifyAdminApiPassword ? 'disabled' }}"
+			value="Setup Webhooks"
+			{{ not settings.shopifyAdminApiPassword ? 'disabled' }}
+		/>
+	</form>
+{% endset %}
+
+{{ forms.field({
+	label: 'Webhooks',
+	instructions: 'Use the button below to automatically setup the required webhooks in your Shopify store. You can re-run this if your sites URL changes.',
+}, webhookBtn) }}

@@ -8,6 +8,8 @@
 
 return [
 	'shopifyStorefrontAccessToken' => '',
+	'shopifyAdminApiPassword' => '',
+	'shopHandle' => '',
 	'productEntryTypeUid' => '',
 	'collectionCategoryGroupUid' => '',
 	'collectionCategoryFieldUid' => '',

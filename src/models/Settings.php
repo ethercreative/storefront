@@ -29,6 +29,17 @@ class Settings extends Model
 	public $shopifyStorefrontAccessToken = '';
 
 	/**
+	 * @var string The Shopify admin API password
+	 * @see https://help.shopify.com/en/api/graphql-admin-api/getting-started#authentication
+	 */
+	public $shopifyAdminApiPassword = '';
+
+	/**
+	 * @var string The handle of your Shopify shop
+	 */
+	public $shopHandle = '';
+
+	/**
 	 * @var string The UID for the entry type that will be automatically
 	 *             populated by Shopify products
 	 */

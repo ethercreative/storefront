@@ -1,7 +1,7 @@
 {
   "name": "ether/storefront",
   "description": "Easily integrate Shopify with Craft CMS!",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha.1",
   "type": "craft-plugin",
   "license": "proprietary",
   "minimum-stability": "dev",
@@ -26,6 +26,6 @@
     "developerUrl": "https://ethercreative.co.uk",
 
     "class": "ether\\storefront\\Storefront",
-    "schemaVersion": "1.0.0"
+    "schemaVersion": "1.0.1"
   }
 }

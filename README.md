@@ -20,3 +20,9 @@
 #### Nice to have
 - [ ] Allow basic editing of Shopify products in craft (i.e. title)
 - [ ] Widgets showing various sales metrics
+- [ ] Track orders in Craft to allow for stuff like "frequently bought together" without needing shopify add-ons
+
+## Usage
+
+- Create Shopify private app
+- "Products, variants and collections" Read / Write access
