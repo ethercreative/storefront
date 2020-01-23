@@ -83,13 +83,13 @@ GQL;
 		}
 		else
 		{
-			$entryType = $this->_getEntryTypeByUid(
-				Storefront::getInstance()->getSettings()->productEntryTypeUid
+			$section = Craft::$app->getSections()->getSectionByUid(
+				Storefront::getInstance()->getSettings()->productSectionUid
 			);
 
 			$entry = new Entry();
-			$entry->sectionId = $entryType->sectionId;
-			$entry->typeId = $entryType->id;
+			$entry->sectionId = $section->id;
+			$entry->typeId = $section->getEntryTypes()[0]->id;
 			$entry->enabled = false;
 		}
 
@@ -237,24 +237,6 @@ GQL;
 	}
 
 	/**
-	 * Gets the entry type for the given UID
-	 *
-	 * @param string $uid
-	 *
-	 * @return EntryType|null
-	 */
-	private function _getEntryTypeByUid ($uid)
-	{
-		$id = (new Query())
-			->select('id')
-			->from(Table::ENTRYTYPES)
-			->where(['uid' => $uid])
-			->scalar();
-
-		return Craft::$app->getSections()->getEntryTypeById($id);
-	}
-
-	/**
 	 * Validate that the given entry exists and is a Shopify generated entry
 	 *
 	 * @param Entry|null $entry
@@ -267,7 +249,7 @@ GQL;
 		if (!$entry)
 			return null;
 
-		if ($entry->getType()->uid !== Storefront::getInstance()->getSettings()->productEntryTypeUid)
+		if ($entry->getSection()->uid !== Storefront::getInstance()->getSettings()->productSectionUid)
 			return null;
 
 		return $this->_getShopifyIdByEntryId($entry->id);

@@ -131,8 +131,8 @@ class Storefront extends Plugin
 	 */
 	protected function settingsHtml ()
 	{
-		$entryTypes = self::_formatSelectOptions(
-			Craft::$app->getSections()->getAllEntryTypes()
+		$sections = self::_formatSelectOptions(
+			Craft::$app->getSections()->getAllSections()
 		);
 
 		$categoryGroups = self::_formatSelectOptions(
@@ -152,7 +152,7 @@ class Storefront extends Plugin
 
 		return Craft::$app->getView()->renderTemplate('storefront/_settings', [
 			'settings' => $this->getSettings(),
-			'entryTypeOptions' => $entryTypes,
+			'sectionOptions' => $sections,
 			'categoryGroupOptions' => $categoryGroups,
 			'categoryFieldOptions' => $categoryFields,
 		]);

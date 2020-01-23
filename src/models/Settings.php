@@ -40,10 +40,10 @@ class Settings extends Model
 	public $shopHandle = '';
 
 	/**
-	 * @var string The UID for the entry type that will be automatically
+	 * @var string The UID for the section that will be automatically
 	 *             populated by Shopify products
 	 */
-	public $productEntryTypeUid = '';
+	public $productSectionUid = '';
 
 	/**
 	 * @var string The UID for the category group that will be automatically

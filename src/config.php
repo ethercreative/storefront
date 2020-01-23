@@ -10,7 +10,7 @@ return [
 	'shopifyStorefrontAccessToken' => '',
 	'shopifyAdminApiPassword' => '',
 	'shopHandle' => '',
-	'productEntryTypeUid' => '',
+	'productSectionUid' => '',
 	'collectionCategoryGroupUid' => '',
 	'collectionCategoryFieldUid' => '',
 ];

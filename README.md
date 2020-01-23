@@ -8,6 +8,7 @@
   - [x] Order Create
   - [x] Add utility to automatically add the webhooks (will need more API access)
 - [x] Add manual sync utilities
+- [x] DON'T use element type, use section
 
 #### MVP
 - [x] Dynamically create / remove entries based on Shopify products (entries disabled by default)
@@ -20,6 +21,8 @@
 - [ ] Allow basic editing of Shopify products in craft (i.e. title)
 - [ ] Widgets showing various sales metrics
 - [ ] Store some product info to allow for in-craft filtering
+- [ ] In-craft orders section for viewing / filtering orders (link to shopify)
+- [ ] Add "New Shopify Product" button to element index for selected product element type
 
 ## Usage
 
