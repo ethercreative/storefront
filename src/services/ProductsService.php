@@ -13,6 +13,7 @@ use craft\base\Component;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
+use craft\errors\ElementNotFoundException;
 use craft\models\EntryType;
 use ether\storefront\Storefront;
 use Throwable;
@@ -20,6 +21,7 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use yii\base\InvalidConfigException;
+use yii\db\Exception;
 
 /**
  * Class ProductsService
@@ -30,9 +32,26 @@ use yii\base\InvalidConfigException;
 class ProductsService extends Component
 {
 
+	public static $FRAGMENT = <<<GQL
+fragment Product on Product {
+	id
+	title
+}
+GQL;
+
+	/**
+	 * @param array $data
+	 *
+	 * @throws Throwable
+	 * @throws ElementNotFoundException
+	 * @throws \yii\base\Exception
+	 * @throws Exception
+	 */
 	public function upsert (array $data)
 	{
-		$entryId = $this->_getEntryIdByShopifyId($data['id']);
+		$id = $this->_normalizeId($data['id']);
+
+		$entryId = $this->_getEntryIdByShopifyId($id);
 
 		if ($entryId)
 		{
@@ -47,13 +66,17 @@ class ProductsService extends Component
 			$entry = new Entry();
 			$entry->sectionId = $entryType->sectionId;
 			$entry->typeId = $entryType->id;
-			$entry->title = $data['title'];
+			$entry->enabled = false;
 		}
+
+		$entry->title = $data['title'];
 
 		// TODO: Collections
 
 		if (Craft::$app->getElements()->saveElement($entry))
 		{
+			$this->_clearCaches($id);
+
 			if ($entryId)
 				return;
 
@@ -61,7 +84,7 @@ class ProductsService extends Component
 				'{{%storefront_products}}',
 				[
 					'id' => $entry->id,
-					'shopifyId' => 'gid://shopify/Product/' . $data['id'],
+					'shopifyId' => $id,
 				],
 				false
 			)->execute();
@@ -82,12 +105,15 @@ class ProductsService extends Component
 	 */
 	public function delete (array $data)
 	{
-		$entryId = $this->_getEntryIdByShopifyId($data['id']);
+		$id = $this->_normalizeId($data['id']);
+
+		$entryId = $this->_getEntryIdByShopifyId($id);
 
 		if (!$entryId)
 			return;
 
 		Craft::$app->getElements()->deleteElementById($entryId);
+		$this->_clearCaches($id);
 	}
 
 	// Edit
@@ -207,6 +233,33 @@ class ProductsService extends Component
 			return null;
 
 		return $this->_getShopifyIdByEntryId($entry->id);
+	}
+
+	/**
+	 * Clear the caches for the given ID
+	 *
+	 * @param string $id
+	 */
+	private function _clearCaches ($id)
+	{
+		Craft::$app->getCache()->delete($id);
+		Craft::$app->getTemplateCaches()->deleteCachesByKey($id);
+		Craft::debug("Clear caches for: $id", 'storefront');
+	}
+
+	/**
+	 * Normalize the product ID
+	 *
+	 * @param string $id
+	 *
+	 * @return string
+	 */
+	private function _normalizeId ($id)
+	{
+		if (strpos($id, 'gid://shopify/Product/') !== false)
+			return $id;
+
+		return 'gid://shopify/Product/' . $id;
 	}
 
 }

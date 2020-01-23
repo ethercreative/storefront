@@ -8,8 +8,10 @@
 
 namespace ether\storefront\controllers;
 
+use Craft;
 use craft\errors\MissingComponentException;
 use craft\web\Controller;
+use ether\storefront\jobs\ImportProductsJob;
 use ether\storefront\Storefront;
 use yii\db\Exception;
 use yii\web\BadRequestHttpException;
@@ -33,6 +35,18 @@ class SetupController extends Controller
 	public function actionWebhooks ()
 	{
 		Storefront::getInstance()->webhook->install();
+		return $this->redirectToPostedUrl();
+	}
+
+	/**
+	 * @return Response
+	 * @throws BadRequestHttpException
+	 * @throws MissingComponentException
+	 */
+	public function actionImport ()
+	{
+		Craft::$app->getQueue()->push(new ImportProductsJob());
+		Craft::$app->getSession()->setNotice('Queued import task');
 		return $this->redirectToPostedUrl();
 	}
 

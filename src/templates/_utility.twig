@@ -16,4 +16,23 @@
 {{ forms.field({
 	label: 'Webhooks',
 	instructions: 'Use the button below to automatically setup the required webhooks in your Shopify store. You can re-run this if your sites URL changes.',
+	first: true,
 }, webhookBtn) }}
+
+{% set importBtn %}
+	<form method="post">
+		{{ csrfInput() }}
+		{{ actionInput('storefront/setup/import') }}
+		<input
+			type="submit"
+			class="btn {{ not settings.shopifyAdminApiPassword ? 'disabled' }}"
+			value="Import Products"
+			{{ not settings.shopifyAdminApiPassword ? 'disabled' }}
+		/>
+	</form>
+{% endset %}
+
+{{ forms.field({
+	label: 'Import (Task)',
+	instructions: 'Import all products from your Shopify store. This will create new products and update existing ones.',
+}, importBtn) }}

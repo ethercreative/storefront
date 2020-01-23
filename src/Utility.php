@@ -35,6 +35,11 @@ class Utility extends \craft\base\Utility
 		return 'storefront';
 	}
 
+	public static function iconPath ()
+	{
+		return __DIR__ . '/icon-mask.svg';
+	}
+
 	/**
 	 * @inheritDoc
 	 * @throws TwigLoaderError
