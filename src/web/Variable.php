@@ -33,4 +33,21 @@ class Variable
 		return $this->getShopUrl() . 'admin/products/' . $id;
 	}
 
+	public function getVariantEditUrl ($productId, $id)
+	{
+		$id = str_replace('gid://shopify/productvariant/', '', strtolower($id));
+
+		return $this->getProductEditUrl($productId) . '/variants/' . $id;
+	}
+
+	public function getOptionLabelsFromVariant ($variant)
+	{
+		$labels = [];
+
+		foreach ($variant['options'] as $option)
+			$labels[] = $option['name'];
+
+		return $labels;
+	}
+
 }

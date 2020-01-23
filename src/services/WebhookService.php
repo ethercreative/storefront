@@ -10,10 +10,12 @@ namespace ether\storefront\services;
 
 use Craft;
 use craft\base\Component;
+use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use ether\storefront\Storefront;
+use Throwable;
 use yii\db\Exception;
 use yii\db\Query;
 use yii\helpers\Json;
@@ -170,6 +172,10 @@ GQL;
 	 * Handles webhook events
 	 *
 	 * @throws BadRequestHttpException
+	 * @throws Exception
+	 * @throws Throwable
+	 * @throws ElementNotFoundException
+	 * @throws \yii\base\Exception
 	 */
 	public function listen ()
 	{
@@ -182,7 +188,7 @@ GQL;
 		{
 			case 'PRODUCTS_CREATE':
 			case 'PRODUCTS_UPDATE':
-				Storefront::getInstance()->products->upsert($json);
+				Storefront::getInstance()->products->upsert($json, true);
 				break;
 			case 'PRODUCTS_DELETE':
 				Storefront::getInstance()->products->delete($json);

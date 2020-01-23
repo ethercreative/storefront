@@ -41,15 +41,39 @@ GQL;
 
 	/**
 	 * @param array $data
+	 * @param bool  $fetchFresh - Should we query fresh data from graph?
 	 *
-	 * @throws Throwable
 	 * @throws ElementNotFoundException
-	 * @throws \yii\base\Exception
 	 * @throws Exception
+	 * @throws Throwable
+	 * @throws \yii\base\Exception
 	 */
-	public function upsert (array $data)
+	public function upsert (array $data, $fetchFresh = false)
 	{
-		$id = $this->_normalizeId($data['id']);
+		$id = $this->_normalizeId($data);
+
+		if ($fetchFresh)
+		{
+			$fragment = self::$FRAGMENT;
+			$query = <<<GQL
+query GetProduct (\$id: ID!) {
+	product (id: \$id) {
+		...Product
+	}
+}
+$fragment
+GQL;
+			$res = Storefront::getInstance()->graph->admin($query, compact('id'));
+
+			if (array_key_exists('errors', $res))
+			{
+				Craft::error('Failed to import product: ' . $id, 'storefront');
+				Craft::error($res['errors'], 'storefront');
+				return;
+			}
+
+			$data = $res['data']['product'];
+		}
 
 		$entryId = $this->_getEntryIdByShopifyId($id);
 
@@ -105,7 +129,7 @@ GQL;
 	 */
 	public function delete (array $data)
 	{
-		$id = $this->_normalizeId($data['id']);
+		$id = $this->_normalizeId($data);
 
 		$entryId = $this->_getEntryIdByShopifyId($id);
 
@@ -134,7 +158,7 @@ GQL;
 
 		$context['tabs'][] = [
 			'label' => 'Shopify',
-			'url'   => '#tab-shopify',
+			'url'   => '#storefront-tab-shopify',
 			'class' => null,
 		];
 
@@ -250,12 +274,17 @@ GQL;
 	/**
 	 * Normalize the product ID
 	 *
-	 * @param string $id
+	 * @param array $data
 	 *
 	 * @return string
 	 */
-	private function _normalizeId ($id)
+	private function _normalizeId ($data)
 	{
+		if (array_key_exists('admin_graphql_api_id', $data))
+			return $data['admin_graphql_api_id'];
+
+		$id = $data['id'];
+
 		if (strpos($id, 'gid://shopify/Product/') !== false)
 			return $id;
 

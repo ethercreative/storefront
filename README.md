@@ -8,7 +8,7 @@
   - [ ] Inventory item Update?
   - [ ] Inventory level Update?
   - [x] Add utility to automatically add the webhooks (will need more API access)
-- [ ] Add manual sync utilities
+- [x] Add manual sync utilities
 
 #### MVP
 - [x] Dynamically create / remove entries based on Shopify products (entries disabled by default)
@@ -25,4 +25,5 @@
 ## Usage
 
 - Create Shopify private app
+- Enable Storefront API
 - "Products, variants and collections" Read / Write access
