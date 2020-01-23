@@ -99,7 +99,7 @@ GQL;
 
 		if (Craft::$app->getElements()->saveElement($entry))
 		{
-			$this->_clearCaches($id);
+			$this->clearCaches($id);
 
 			if ($entryId)
 				return;
@@ -137,7 +137,7 @@ GQL;
 			return;
 
 		Craft::$app->getElements()->deleteElementById($entryId);
-		$this->_clearCaches($id);
+		$this->clearCaches($id);
 	}
 
 	// Edit
@@ -189,6 +189,20 @@ GQL;
 
 	// Helpers
 	// =========================================================================
+
+	/**
+	 * Clear the caches for the given ID
+	 *
+	 * @param string $id
+	 */
+	public function clearCaches ($id)
+	{
+		$id = $this->_normalizeId(compact('id'));
+
+		Craft::$app->getCache()->delete($id);
+		Craft::$app->getTemplateCaches()->deleteCachesByKey($id);
+		Craft::debug("Clear caches for: $id", 'storefront');
+	}
 
 	/**
 	 * Gets an entry ID by the given product ID
@@ -257,18 +271,6 @@ GQL;
 			return null;
 
 		return $this->_getShopifyIdByEntryId($entry->id);
-	}
-
-	/**
-	 * Clear the caches for the given ID
-	 *
-	 * @param string $id
-	 */
-	private function _clearCaches ($id)
-	{
-		Craft::$app->getCache()->delete($id);
-		Craft::$app->getTemplateCaches()->deleteCachesByKey($id);
-		Craft::debug("Clear caches for: $id", 'storefront');
 	}
 
 	/**

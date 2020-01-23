@@ -47,6 +47,8 @@ class WebhookService extends Component
 			'PRODUCTS_CREATE',
 			'PRODUCTS_UPDATE',
 			'PRODUCTS_DELETE',
+
+			'ORDERS_CREATE',
 		];
 
 		$existingHooks = $this->_getSavedWebhooks('hook');
@@ -192,6 +194,9 @@ GQL;
 				break;
 			case 'PRODUCTS_DELETE':
 				Storefront::getInstance()->products->delete($json);
+				break;
+			case 'ORDERS_CREATE':
+				Storefront::getInstance()->orders->onCreate($json);
 				break;
 		}
 	}

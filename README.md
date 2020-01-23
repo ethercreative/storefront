@@ -3,10 +3,9 @@
 
 ### TODO
 - [ ] Create endpoints for the following webhooks:
-  - [ ] Collection Create / Update / Delete
+  - [ ] Collection Create? / Update / Delete
   - [x] Product Create / Update / Delete
-  - [ ] Inventory item Update?
-  - [ ] Inventory level Update?
+  - [x] Order Create
   - [x] Add utility to automatically add the webhooks (will need more API access)
 - [x] Add manual sync utilities
 
@@ -20,10 +19,11 @@
 #### Nice to have
 - [ ] Allow basic editing of Shopify products in craft (i.e. title)
 - [ ] Widgets showing various sales metrics
-- [ ] Track orders in Craft to allow for stuff like "frequently bought together" without needing shopify add-ons
+- [ ] Store some product info to allow for in-craft filtering
 
 ## Usage
 
 - Create Shopify private app
 - Enable Storefront API
 - "Products, variants and collections" Read / Write access
+- "Orders, transactions and fulfillments" Read / Write access

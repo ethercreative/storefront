@@ -19,6 +19,7 @@ use craft\services\Utilities;
 use craft\web\twig\variables\CraftVariable;
 use ether\storefront\models\Settings;
 use ether\storefront\services\GraphService;
+use ether\storefront\services\OrdersService;
 use ether\storefront\services\ProductsService;
 use ether\storefront\services\WebhookService;
 use ether\storefront\web\twig\Extension;
@@ -38,6 +39,7 @@ use yii\db\Exception;
  * @property GraphService $graph
  * @property WebhookService $webhook
  * @property ProductsService $products
+ * @property OrdersService $orders
  */
 class Storefront extends Plugin
 {
@@ -58,6 +60,7 @@ class Storefront extends Plugin
 			'graph' => GraphService::class,
 			'webhook' => WebhookService::class,
 			'products' => ProductsService::class,
+			'orders' => OrdersService::class,
 		]);
 
 		Craft::$app->getView()->registerTwigExtension(
@@ -98,6 +101,8 @@ class Storefront extends Plugin
 
 		return parent::beforeUninstall();
 	}
+
+	// TODO: Update webhooks after plugin update (just in case)
 
 	// Settings
 	// =========================================================================
