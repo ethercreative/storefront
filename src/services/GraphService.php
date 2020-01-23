@@ -13,6 +13,7 @@ use craft\base\Component;
 use craft\helpers\Json;
 use ether\storefront\models\Settings;
 use ether\storefront\Storefront;
+use Exception;
 use GuzzleHttp\Client;
 
 /**
@@ -29,6 +30,35 @@ class GraphService extends Component
 	// Public
 	// =========================================================================
 
+	/**
+	 * Query function used in twig
+	 *
+	 * @param string $api
+	 * @param string $query
+	 * @param array  $variables
+	 *
+	 * @return array
+	 * @throws Exception
+	 */
+	public function template ($api, $query, $variables = [])
+	{
+		if (preg_match('/^\s*mutation\s*?\w*?\s*?\(/mi', $query))
+			throw new Exception('Mutations are not allowed in template queries!');
+
+		if ($api !== 'admin' && $api !== 'storefront')
+			$api = 'storefront';
+
+		return $this->$api($query, $variables);
+	}
+
+	/**
+	 * Query the Admin API
+	 *
+	 * @param string $query
+	 * @param array  $variables
+	 *
+	 * @return array
+	 */
 	public function admin ($query, $variables = [])
 	{
 		$client = $this->_client(
@@ -40,6 +70,14 @@ class GraphService extends Component
 		return $this->_query($client, $query, $variables);
 	}
 
+	/**
+	 * Query the Storefront API
+	 *
+	 * @param string $query
+	 * @param array  $variables
+	 *
+	 * @return mixed
+	 */
 	public function storefront ($query, $variables = [])
 	{
 		$client = $this->_client(

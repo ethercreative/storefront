@@ -16,15 +16,19 @@ use craft\errors\MissingComponentException;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\Categories;
 use craft\services\Utilities;
+use craft\web\twig\variables\CraftVariable;
 use ether\storefront\models\Settings;
 use ether\storefront\services\GraphService;
 use ether\storefront\services\ProductsService;
 use ether\storefront\services\WebhookService;
 use ether\storefront\web\twig\Extension;
+use ether\storefront\web\Variable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use yii\base\Event;
+use yii\base\InvalidConfigException;
+use yii\db\Exception;
 
 /**
  * Class Storefront
@@ -66,6 +70,12 @@ class Storefront extends Plugin
 			function (RegisterComponentTypesEvent $event) {
 				$event->types[] = Utility::class;
 			}
+		);
+
+		Event::on(
+			CraftVariable::class,
+			CraftVariable::EVENT_INIT,
+			[$this, 'onRegisterVariable']
 		);
 
 		Craft::$app->view->hook('cp.entries.edit', function(array &$context) {
@@ -120,16 +130,6 @@ class Storefront extends Plugin
 			Craft::$app->getSections()->getAllEntryTypes()
 		);
 
-		$productFields = self::_formatSelectOptions(
-			array_filter(
-				Craft::$app->getFields()->getAllFields(),
-				function (Field $field) {
-					return $field instanceof ProductField;
-				}
-			),
-			true
-		);
-
 		$categoryGroups = self::_formatSelectOptions(
 			Craft::$app->getCategories()->getAllGroups(),
 			true
@@ -148,10 +148,35 @@ class Storefront extends Plugin
 		return Craft::$app->getView()->renderTemplate('storefront/_settings', [
 			'settings' => $this->getSettings(),
 			'entryTypeOptions' => $entryTypes,
-			'productFieldOptions' => $productFields,
 			'categoryGroupOptions' => $categoryGroups,
 			'categoryFieldOptions' => $categoryFields,
 		]);
+	}
+
+	/**
+	 * @throws MissingComponentException
+	 * @throws Exception
+	 */
+	public function afterSaveSettings ()
+	{
+		$this->webhook->install();
+
+		parent::afterSaveSettings();
+	}
+
+	// Events
+	// =========================================================================
+
+	/**
+	 * @param Event $event
+	 *
+	 * @throws InvalidConfigException
+	 */
+	public function onRegisterVariable (Event $event)
+	{
+		/** @var CraftVariable $variable */
+		$variable = $event->sender;
+		$variable->set('storefront', Variable::class);
 	}
 
 	// Helpers

@@ -101,13 +101,7 @@ class ProductsService extends Component
 	 */
 	public function addShopifyTab (array &$context)
 	{
-		/** @var Entry $entry */
-		$entry = @$context['entry'];
-
-		if (!$entry)
-			return null;
-
-		$id = $this->_getShopifyIdByEntryId($entry->id);
+		$id = $this->_validateAndGetId(@$context['entry']);
 
 		if (!$id)
 			return null;
@@ -128,16 +122,11 @@ class ProductsService extends Component
 	 * @throws LoaderError
 	 * @throws RuntimeError
 	 * @throws SyntaxError
+	 * @throws InvalidConfigException
 	 */
 	public function addShopifyDetails (array &$context)
 	{
-		/** @var Entry $entry */
-		$entry = @$context['entry'];
-
-		if (!$entry)
-			return null;
-
-		$id = $this->_getShopifyIdByEntryId($entry->id);
+		$id = $this->_validateAndGetId(@$context['entry']);
 
 		if (!$id)
 			return null;
@@ -199,6 +188,25 @@ class ProductsService extends Component
 			->scalar();
 
 		return Craft::$app->getSections()->getEntryTypeById($id);
+	}
+
+	/**
+	 * Validate that the given entry exists and is a Shopify generated entry
+	 *
+	 * @param Entry|null $entry
+	 *
+	 * @return string|null
+	 * @throws InvalidConfigException
+	 */
+	private function _validateAndGetId ($entry)
+	{
+		if (!$entry)
+			return null;
+
+		if ($entry->getType()->uid !== Storefront::getInstance()->getSettings()->productEntryTypeUid)
+			return null;
+
+		return $this->_getShopifyIdByEntryId($entry->id);
 	}
 
 }

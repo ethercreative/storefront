@@ -36,7 +36,7 @@ class ShopifyNode extends Node implements NodeCaptureInterface
 			->write('ob_start();' . PHP_EOL)
 			->subcompile($query)
 			->write('$context[\'' . $handle . '\'] = ')
-			->raw(Storefront::class . '::getInstance()->graph->' . $api . '(')
+			->raw(Storefront::class . '::getInstance()->graph->template(\'' . $api . '\', ')
 			->raw('ob_get_clean(), ')
 			->raw($variables->compile($compiler) . ');' . PHP_EOL);
 	}

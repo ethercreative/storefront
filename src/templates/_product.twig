@@ -1,8 +1,49 @@
+{# TODO: Move styles into stylesheet #}
 <style>
 	.shopify-wrap {
 		padding: 27px;
-		border: 1px solid #eee;
-		border-radius: 5px;
+		box-shadow: 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
+		border-radius: 3px;
+	}
+	.shopify-flex {
+		display: flex;
+		align-items: flex-start;
+	}
+	.shopify-flex img {
+		width: 200px;
+		height: 200px;
+		margin-right: 24px;
+		vertical-align: middle;
+		border: .1rem solid #dfe3e8;
+		background-color: #f9fafb;
+		border-radius: 3px;
+		object-fit: contain;
+		overflow: hidden;
+	}
+	.shopify-details {
+		width: 100%;
+		flex-shrink: 9999;
+	}
+	.shopify-details header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+	}
+	.shopify-details h1 {
+		margin-bottom: 7px;
+	}
+	.shopify-price {
+		margin-bottom: 14px;
+
+		color: #646464;
+		font-size: 16px;
+		text-transform: uppercase;
+	}
+	.shopify-stock {
+		color: #00b007;
+	}
+	.shopify-stock.out {
+		color: #da5a47;
 	}
 </style>
 
@@ -15,20 +56,88 @@
 } as admin %}
 	query GetProduct ($id: ID!) {
 		product (id: $id) {
+			id
 			title
 			descriptionHtml
+			featuredImage {
+				transformedSrc
+				altText
+			}
+			price: priceRange {
+				min: minVariantPrice {
+					amount
+					code: currencyCode
+				}
+				max: maxVariantPrice {
+					amount
+				}
+			}
+			hasOutOfStockVariants
+			totalInventory
 		}
 	}
 {% endshopify %}
 
-{# TODO: error handling #}
-
 <div id="tab-shopify" class="hidden">
 	<div class="shopify-wrap">
 		{% if 'errors' in gql|keys %}
-			<pre><code>{{ dump(gql.errors) }}</code></pre>
+			<h3 style="color:#da5a47">Something went wrong!</h3>
+			<ul class="errors">
+				{% for error in gql.errors %}
+					<li>{{ error.message }}</li>
+				{% endfor %}
+			</ul>
 		{% else %}
-			<p><strong>{{ gql.data.product.title }}</strong></p>
+			{% set product = gql.data.product %}
+			<div class="shopify-flex">
+				{% if product.featuredImage %}
+					<img
+						src="{{ product.featuredImage.transformedSrc }}"
+						alt="{{ product.featuredImage.altText }}"
+					/>
+				{% endif %}
+				<div class="shopify-details">
+					<header>
+						<div>
+							<h1>{{ product.title }}</h1>
+
+							<div class="shopify-price">
+								{% set price = product.price %}
+								{% if price.min.amount == price.max.amount %}
+									{{ price.min.code }} {{ price.min.amount|currency(price.min.code, stripZeros=true) }}
+								{% else %}
+									{{ price.min.code }} {{ price.min.amount|currency(price.min.code, stripZeros=true) }} - {{ price.max.amount|currency(price.min.code, stripZeros=true) }}
+								{% endif %}
+							</div>
+
+							{% if product.hasOutOfStockVariants %}
+								<div class="shopify-stock out">
+									{% if product.totalInventory > 0 %}
+										Some variants are out of stock
+									{% else %}
+										Out of stock
+									{% endif %}
+								</div>
+							{% else %}
+								<div class="shopify-stock">
+									In stock
+								</div>
+							{% endif %}
+						</div>
+
+						<div>
+							<a href="{{ craft.storefront.getProductEditUrl(product.id) }}" target="_blank" class="btn secondary" data-icon-after="share">
+								View on Shopify
+							</a>
+						</div>
+					</header>
+
+					{% if product.descriptionHtml %}
+						<hr>
+						{{ product.descriptionHtml|raw }}
+					{% endif %}
+				</div>
+			</div>
 		{% endif %}
 	</div>
 </div>
