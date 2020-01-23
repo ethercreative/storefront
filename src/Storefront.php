@@ -18,6 +18,7 @@ use craft\fields\Categories;
 use craft\services\Utilities;
 use craft\web\twig\variables\CraftVariable;
 use ether\storefront\models\Settings;
+use ether\storefront\services\CollectionsService;
 use ether\storefront\services\GraphService;
 use ether\storefront\services\OrdersService;
 use ether\storefront\services\ProductsService;
@@ -40,6 +41,7 @@ use yii\db\Exception;
  * @property WebhookService $webhook
  * @property ProductsService $products
  * @property OrdersService $orders
+ * @property CollectionsService $collections
  */
 class Storefront extends Plugin
 {
@@ -61,6 +63,7 @@ class Storefront extends Plugin
 			'webhook' => WebhookService::class,
 			'products' => ProductsService::class,
 			'orders' => OrdersService::class,
+			'collections' => CollectionsService::class,
 		]);
 
 		Craft::$app->getView()->registerTwigExtension(
@@ -103,6 +106,7 @@ class Storefront extends Plugin
 	}
 
 	// TODO: Update webhooks after plugin update (just in case)
+	//  (Probably have to be a migration)
 
 	// Settings
 	// =========================================================================

@@ -41,7 +41,7 @@ class ImportProductsJob extends BaseJob
 
 		$products = [];
 		$cursor = null;
-		$productFragment = ProductsService::$FRAGMENT;
+		$productFragment = ProductsService::FRAGMENT();
 
 		do {
 			$query = <<<GQL

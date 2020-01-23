@@ -23,6 +23,7 @@
 - [ ] Store some product info to allow for in-craft filtering
 - [ ] In-craft orders section for viewing / filtering orders (link to shopify)
 - [ ] Add "New Shopify Product" button to element index for selected product element type
+- [ ] Map any value from a product to any field (within reason)
 
 ## Usage
 

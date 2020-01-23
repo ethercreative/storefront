@@ -10,11 +10,10 @@ namespace ether\storefront\services;
 
 use Craft;
 use craft\base\Component;
+use craft\base\Field;
 use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\ElementNotFoundException;
-use craft\models\EntryType;
 use ether\storefront\Storefront;
 use Throwable;
 use Twig\Error\LoaderError;
@@ -32,12 +31,24 @@ use yii\db\Exception;
 class ProductsService extends Component
 {
 
-	public static $FRAGMENT = <<<GQL
+	public static function FRAGMENT () {
+		$collectionFragment = CollectionsService::FRAGMENT();
+
+		return <<<GQL
 fragment Product on Product {
 	id
 	title
+	collections (first: 250) {
+		edges {
+			node {
+				...Collection
+			}
+		}
+	}
 }
+$collectionFragment
 GQL;
+	}
 
 	/**
 	 * @param array $data
@@ -50,11 +61,12 @@ GQL;
 	 */
 	public function upsert (array $data, $fetchFresh = false)
 	{
+		$settings = Storefront::getInstance()->getSettings();
 		$id = $this->_normalizeId($data);
 
 		if ($fetchFresh)
 		{
-			$fragment = self::$FRAGMENT;
+			$fragment = self::FRAGMENT();
 			$query = <<<GQL
 query GetProduct (\$id: ID!) {
 	product (id: \$id) {
@@ -84,7 +96,7 @@ GQL;
 		else
 		{
 			$section = Craft::$app->getSections()->getSectionByUid(
-				Storefront::getInstance()->getSettings()->productSectionUid
+				$settings->productSectionUid
 			);
 
 			$entry = new Entry();
@@ -95,7 +107,21 @@ GQL;
 
 		$entry->title = $data['title'];
 
-		// TODO: Collections
+		if ($settings->collectionCategoryFieldUid)
+		{
+			/** @var Field $collectionField */
+			$collectionField = Craft::$app->getFields()->getFieldByUid(
+				$settings->collectionCategoryFieldUid
+			);
+			
+			$ids = [];
+			
+			// TODO: Handle pagination?
+			foreach ($data['collections']['edges'] as $edge)
+				$ids[] = Storefront::getInstance()->collections->upsert($edge['node']);
+
+			$entry->setFieldValue($collectionField->handle, $ids);
+		}
 
 		if (Craft::$app->getElements()->saveElement($entry))
 		{
