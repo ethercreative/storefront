@@ -9,14 +9,21 @@
 namespace ether\storefront;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Model;
 use craft\base\Plugin;
+use craft\elements\Category;
+use craft\elements\Entry;
 use craft\errors\MissingComponentException;
+use craft\events\DefineBehaviorsEvent;
+use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\Categories;
 use craft\fields\Tags;
+use craft\helpers\ArrayHelper;
 use craft\services\Utilities;
 use craft\web\twig\variables\CraftVariable;
+use ether\storefront\behaviors\ShopifyBehavior;
 use ether\storefront\models\Settings;
 use ether\storefront\services\CollectionsService;
 use ether\storefront\services\GraphService;
@@ -32,6 +39,7 @@ use Twig\Error\SyntaxError;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
+use yii\db\Query;
 
 /**
  * Class Storefront
@@ -79,6 +87,18 @@ class Storefront extends Plugin
 			function (RegisterComponentTypesEvent $event) {
 				$event->types[] = Utility::class;
 			}
+		);
+
+		Event::on(
+			Element::class,
+			Element::EVENT_DEFINE_BEHAVIORS,
+			[$this, 'onDefineElementBehaviours']
+		);
+
+		Event::on(
+			Element::class,
+			Element::EVENT_DEFINE_EAGER_LOADING_MAP,
+			[$this, 'onDefineElementEagerLoadingMap']
 		);
 
 		Event::on(
@@ -215,6 +235,58 @@ class Storefront extends Plugin
 		$variable->set('storefront', Variable::class);
 	}
 
+	/**
+	 * @param DefineBehaviorsEvent $event
+	 */
+	public function onDefineElementBehaviours (DefineBehaviorsEvent $event)
+	{
+		$event->behaviors[] = ShopifyBehavior::class;
+	}
+
+	/**
+	 * Automatically eager-load any Shopify related stuff, no .with() required
+	 *
+	 * FIXME: This only works if you are eager-loading something (it doesn't
+	 *   even have to exist) i.e. ..ries.with(['whatever']).al.. will work,
+	 *   but ..ries.al.. won't.
+	 * TODO: Try to find a workaround where this will always be called after
+	 *   we've gotten the elements. Perhaps injecting our own join code into
+	 *   ElementQuery::afterPrepare()?
+	 *
+	 * @param DefineEagerLoadingMapEvent $event
+	 *
+	 * @throws InvalidConfigException
+	 */
+	public function onDefineElementEagerLoadingMap (DefineEagerLoadingMapEvent $event)
+	{
+		/** @var Element[] $elements */
+		$elements = $event->sourceElements;
+
+		// Note: if we switch to injecting into the element query, we should
+		//   check the Query class to see what element we're querying, and the
+		//   already defined properties to see if it's a section or group we
+		//   care about
+		if (empty($elements) || !$this->_isShopifyElement($elements[0]))
+			return;
+
+		$elementIds = [];
+
+		foreach ($elements as $element)
+			$elementIds[] = $element->id;
+
+		$map = (new Query())
+			->select('id, shopifyId')
+			->from('{{%storefront_relations}}')
+			->where(['id' => $elementIds])
+			->all();
+
+		$map = ArrayHelper::map($map, 'id', 'shopifyId');
+
+		foreach ($elements as $element)
+			if (array_key_exists($element->id, $map))
+				$element->shopifyId = $map[$element->id];
+	}
+
 	// Helpers
 	// =========================================================================
 
@@ -238,6 +310,27 @@ class Storefront extends Plugin
 				],
 			]
 		);
+	}
+
+	/**
+	 * Ensures the given element is one we care about
+	 *
+	 * @param Element $element
+	 *
+	 * @return bool
+	 * @throws InvalidConfigException
+	 */
+	private function _isShopifyElement (Element $element)
+	{
+		$settings = $this->getSettings();
+
+		if ($element instanceof Entry)
+			return $element->getSection()->uid === $settings->productSectionUid;
+
+		if ($element instanceof Category)
+			return $element->getGroup()->uid === $settings->collectionCategoryGroupUid;
+
+		return false;
 	}
 
 }
