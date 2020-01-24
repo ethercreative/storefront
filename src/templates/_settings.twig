@@ -41,6 +41,10 @@
 	required: true,
 }) }}
 
+<hr>
+
+<h2>Field Mapping</h2>
+
 {{ forms.selectField({
 	label: 'Collection Category Group',
 	instructions: 'The category group that will be automatically populated by Shopify collections',
@@ -55,4 +59,12 @@
 	name: 'collectionCategoryFieldUid',
 	options: categoryFieldOptions,
 	value: settings.collectionCategoryFieldUid,
+}) }}
+
+{{ forms.selectField({
+	label: 'Tag Field',
+	instructions: 'The tag field on the products',
+	name: 'tagFieldUid',
+	options: tagFieldOptions,
+	value: settings.tagFieldUid,
 }) }}

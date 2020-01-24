@@ -25,6 +25,8 @@
 - [ ] Add "New Shopify Product" button to element index for selected product element type
 - [ ] Map any value from a product to any field (within reason)
 - [ ] Add product search to collection page
+- [ ] Two-way sync (sync changes in Craft to Shopify for tracked fields)
+- [ ] Add "Admin Link" to Shopify, linking directly from a product or collection to its Craft counterpart
 
 ## Usage
 

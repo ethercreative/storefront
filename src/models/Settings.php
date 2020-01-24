@@ -45,6 +45,9 @@ class Settings extends Model
 	 */
 	public $productSectionUid = '';
 
+	// Field Mapping
+	// =========================================================================
+
 	/**
 	 * @var string The UID for the category group that will be automatically
 	 *             populated by Shopify collections
@@ -55,5 +58,10 @@ class Settings extends Model
 	 * @var string The UID for the collection category field on the product
 	 */
 	public $collectionCategoryFieldUid = '';
+
+	/**
+	 * @var string The UID for the tag field on the product
+	 */
+	public $tagFieldUid = '';
 
 }

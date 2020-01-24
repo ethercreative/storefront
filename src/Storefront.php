@@ -9,12 +9,12 @@
 namespace ether\storefront;
 
 use Craft;
-use craft\base\Field;
 use craft\base\Model;
 use craft\base\Plugin;
 use craft\errors\MissingComponentException;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\Categories;
+use craft\fields\Tags;
 use craft\services\Utilities;
 use craft\web\twig\variables\CraftVariable;
 use ether\storefront\models\Settings;
@@ -158,13 +158,25 @@ class Storefront extends Plugin
 			true
 		);
 
+		$fields = Craft::$app->getFields()->getAllFields();
+		$categoryFields = [];
+		$tagFields = [];
+
+		foreach ($fields as $field)
+		{
+			if ($field instanceof Categories)
+				$categoryFields[] = $field;
+			else if ($field instanceof Tags)
+				$tagFields[] = $field;
+		}
+
 		$categoryFields = self::_formatSelectOptions(
-			array_filter(
-				Craft::$app->getFields()->getAllFields(),
-				function (Field $field) {
-					return $field instanceof Categories;
-				}
-			),
+			$categoryFields,
+			true
+		);
+
+		$tagFields = self::_formatSelectOptions(
+			$tagFields,
 			true
 		);
 
@@ -173,6 +185,7 @@ class Storefront extends Plugin
 			'sectionOptions' => $sections,
 			'categoryGroupOptions' => $categoryGroups,
 			'categoryFieldOptions' => $categoryFields,
+			'tagFieldOptions' => $tagFields,
 		]);
 	}
 
