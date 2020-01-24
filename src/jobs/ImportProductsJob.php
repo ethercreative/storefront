@@ -45,8 +45,11 @@ class ImportProductsJob extends BaseJob
 
 		do {
 			$query = <<<GQL
-query GetProducts (\$cursor: String) {
-	products (first: 250, after: \$cursor) {
+query GetProducts (
+	\$cursor: String
+	\$collectionLimit: Int
+) {
+	products (first: 50, after: \$cursor) {
 		edges {
 			cursor
 			node {
@@ -60,7 +63,11 @@ query GetProducts (\$cursor: String) {
 }
 $productFragment
 GQL;
-			$res = $graph->admin($query, compact('cursor'));
+
+			$res = $graph->admin($query, [
+				'cursor' => $cursor,
+				'collectionLimit' => 10,
+			]);
 
 			if (array_key_exists('errors', $res)) {
 				Craft::error($res['errors'], 'storefront');

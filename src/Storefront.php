@@ -22,6 +22,7 @@ use ether\storefront\services\CollectionsService;
 use ether\storefront\services\GraphService;
 use ether\storefront\services\OrdersService;
 use ether\storefront\services\ProductsService;
+use ether\storefront\services\RelationsService;
 use ether\storefront\services\WebhookService;
 use ether\storefront\web\twig\Extension;
 use ether\storefront\web\Variable;
@@ -42,6 +43,7 @@ use yii\db\Exception;
  * @property ProductsService $products
  * @property OrdersService $orders
  * @property CollectionsService $collections
+ * @property RelationsService $relations
  */
 class Storefront extends Plugin
 {
@@ -61,6 +63,7 @@ class Storefront extends Plugin
 		$this->setComponents([
 			'graph' => GraphService::class,
 			'webhook' => WebhookService::class,
+			'relations' => RelationsService::class,
 			'products' => ProductsService::class,
 			'orders' => OrdersService::class,
 			'collections' => CollectionsService::class,
@@ -84,12 +87,23 @@ class Storefront extends Plugin
 			[$this, 'onRegisterVariable']
 		);
 
+		// Edit Tabs
+		// ---------------------------------------------------------------------
+
 		Craft::$app->view->hook('cp.entries.edit', function(array &$context) {
 			return $this->products->addShopifyTab($context);
 		});
 
 		Craft::$app->view->hook('cp.entries.edit.content', function(array &$context) {
 			return $this->products->addShopifyDetails($context);
+		});
+
+		Craft::$app->view->hook('cp.categories.edit', function(array &$context) {
+			return $this->collections->addShopifyTab($context);
+		});
+
+		Craft::$app->view->hook('cp.categories.edit.content', function(array &$context) {
+			return $this->collections->addShopifyDetails($context);
 		});
 	}
 

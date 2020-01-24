@@ -35,18 +35,28 @@ class Install extends Migration
 			'id'
 		);
 
-		$this->createTable('storefront_products', [
+		$this->createTable('storefront_relations', [
 			'id' => $this->primaryKey(),
 			'shopifyId' => $this->string(),
+			'type' => $this->string(),
+			'createdAt' => $this->dateTime(),
+			'updatedAt' => $this->dateTime(),
 		]);
 
 		$this->addForeignKey(
 			null,
-			'{{%storefront_products}}',
+			'{{%storefront_relations}}',
 			'id',
 			'{{%elements}}',
 			'id',
 			'CASCADE'
+		);
+
+		$this->createIndex(
+			null,
+			'{{%storefront_relations}}',
+			'type',
+			false
 		);
 	}
 
@@ -56,7 +66,7 @@ class Install extends Migration
 	public function safeDown()
 	{
 		$this->dropTable('storefront_webhooks');
-		$this->dropTable('storefront_products');
+		$this->dropTable('storefront_relations');
 	}
 
 }

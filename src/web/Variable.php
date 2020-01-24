@@ -40,6 +40,13 @@ class Variable
 		return $this->getProductEditUrl($productId) . '/variants/' . $id;
 	}
 
+	public function getCollectionEditUrl ($id)
+	{
+		$id = str_replace('gid://shopify/collection/', '', strtolower($id));
+
+		return $this->getShopUrl() . 'admin/collections/' . $id;
+	}
+
 	public function getOptionLabelsFromVariant ($variant)
 	{
 		$labels = [];

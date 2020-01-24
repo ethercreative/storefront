@@ -48,6 +48,10 @@ class WebhookService extends Component
 			'PRODUCTS_UPDATE',
 			'PRODUCTS_DELETE',
 
+			'COLLECTIONS_CREATE',
+			'COLLECTIONS_UPDATE',
+			'COLLECTIONS_DELETE',
+
 			'ORDERS_CREATE',
 		];
 
@@ -133,6 +137,9 @@ GQL;
 		$hooks = $this->_getSavedWebhooks();
 		$query = '';
 
+		if (empty($hooks))
+			return true;
+
 		foreach ($hooks as $id => $hook)
 		{
 			$query .= <<<GQL
@@ -150,7 +157,7 @@ GQL;
 
 		if (@$res['errors'])
 		{
-			Craft::error($res['errors'][0]['message'], 'storefront');
+			Craft::error($res['errors'], 'storefront');
 			$session->setError('Failed to delete webhooks, see logs for more info.');
 			return false;
 		}
@@ -161,7 +168,7 @@ GQL;
 
 			if (!empty(@$r['userErrors']))
 			{
-				Craft::error($r['userErrors'][0]['message'], 'storefront');
+				Craft::error($r['userErrors'], 'storefront');
 				$session->setError("Failed to delete '$hook' webhook, see logs for more info.");
 				return false;
 			}
@@ -194,6 +201,13 @@ GQL;
 				break;
 			case 'PRODUCTS_DELETE':
 				Storefront::getInstance()->products->delete($json);
+				break;
+			case 'COLLECTIONS_CREATE':
+			case 'COLLECTIONS_UPDATE':
+				Storefront::getInstance()->collections->upsert($json, true);
+				break;
+			case 'COLLECTIONS_DELETE':
+				Storefront::getInstance()->collections->delete($json);
 				break;
 			case 'ORDERS_CREATE':
 				Storefront::getInstance()->orders->onCreate($json);

@@ -11,9 +11,10 @@ namespace ether\storefront\services;
 use Craft;
 use craft\base\Component;
 use craft\base\Field;
-use craft\db\Query;
 use craft\elements\Entry;
 use craft\errors\ElementNotFoundException;
+use ether\storefront\enums\ShopifyType;
+use ether\storefront\helpers\CacheHelper;
 use ether\storefront\Storefront;
 use Throwable;
 use Twig\Error\LoaderError;
@@ -32,21 +33,20 @@ class ProductsService extends Component
 {
 
 	public static function FRAGMENT () {
-		$collectionFragment = CollectionsService::FRAGMENT();
-
 		return <<<GQL
 fragment Product on Product {
 	id
 	title
-	collections (first: 250) {
+	# TODO: It would be nice to get all collections, but setting first to 250 
+	#  exceeds the query cost :(
+	collections (first: \$collectionLimit) {
 		edges {
 			node {
-				...Collection
+				id
 			}
 		}
 	}
 }
-$collectionFragment
 GQL;
 	}
 
@@ -61,14 +61,20 @@ GQL;
 	 */
 	public function upsert (array $data, $fetchFresh = false)
 	{
-		$settings = Storefront::getInstance()->getSettings();
-		$id = $this->_normalizeId($data);
+		$storefront = Storefront::getInstance();
+		$settings = $storefront->getSettings();
+		$relations = $storefront->relations;
+		$collections = $storefront->collections;
+		$id = $relations->getShopifyIdFromArray($data, ShopifyType::Product);
 
 		if ($fetchFresh)
 		{
 			$fragment = self::FRAGMENT();
 			$query = <<<GQL
-query GetProduct (\$id: ID!) {
+query GetProduct (
+	\$id: ID!
+	\$collectionLimit: int = 250
+) {
 	product (id: \$id) {
 		...Product
 	}
@@ -87,7 +93,7 @@ GQL;
 			$data = $res['data']['product'];
 		}
 
-		$entryId = $this->_getEntryIdByShopifyId($id);
+		$entryId = $relations->getElementIdByShopifyId($id);
 
 		if ($entryId)
 		{
@@ -107,7 +113,7 @@ GQL;
 
 		$entry->title = $data['title'];
 
-		if ($settings->collectionCategoryFieldUid)
+		if ($settings->collectionCategoryGroupUid && $settings->collectionCategoryFieldUid)
 		{
 			/** @var Field $collectionField */
 			$collectionField = Craft::$app->getFields()->getFieldByUid(
@@ -118,26 +124,31 @@ GQL;
 			
 			// TODO: Handle pagination?
 			foreach ($data['collections']['edges'] as $edge)
-				$ids[] = Storefront::getInstance()->collections->upsert($edge['node']);
+			{
+				$id = $relations->normalizeShopifyId(
+					$edge['node']['id'],
+					ShopifyType::Collection
+				);
+				$collection = $collections->getCollectionById($id);
+				$id = $collections->upsert($collection);
+				if ($id) $ids[] = $id;
+			}
 
 			$entry->setFieldValue($collectionField->handle, $ids);
 		}
 
 		if (Craft::$app->getElements()->saveElement($entry))
 		{
-			$this->clearCaches($id);
+			CacheHelper::clearCachesByShopifyId($id, ShopifyType::Product);
 
 			if ($entryId)
 				return;
 
-			Craft::$app->getDb()->createCommand()->insert(
-				'{{%storefront_products}}',
-				[
-					'id' => $entry->id,
-					'shopifyId' => $id,
-				],
-				false
-			)->execute();
+			$relations->store(
+				$entry->id,
+				$id,
+				ShopifyType::Product
+			);
 		}
 		else
 		{
@@ -155,15 +166,16 @@ GQL;
 	 */
 	public function delete (array $data)
 	{
-		$id = $this->_normalizeId($data);
+		$relations = Storefront::getInstance()->relations;
 
-		$entryId = $this->_getEntryIdByShopifyId($id);
+		$id = $relations->getShopifyIdFromArray($data, ShopifyType::Product);
+		$entryId = $relations->getElementIdByShopifyId($id);
 
 		if (!$entryId)
 			return;
 
 		Craft::$app->getElements()->deleteElementById($entryId);
-		$this->clearCaches($id);
+		CacheHelper::clearCachesByShopifyId($id, ShopifyType::Product);
 	}
 
 	// Edit
@@ -209,58 +221,15 @@ GQL;
 
 		return Craft::$app->getView()->renderTemplate(
 			'storefront/_product',
-			[ 'id' => $id ]
+			[
+				'id' => $id,
+				'visible' => count($context['tabs']) === 1
+			]
 		);
 	}
 
 	// Helpers
 	// =========================================================================
-
-	/**
-	 * Clear the caches for the given ID
-	 *
-	 * @param string $id
-	 */
-	public function clearCaches ($id)
-	{
-		$id = $this->_normalizeId(compact('id'));
-
-		Craft::$app->getCache()->delete($id);
-		Craft::$app->getTemplateCaches()->deleteCachesByKey($id);
-		Craft::debug("Clear caches for: $id", 'storefront');
-	}
-
-	/**
-	 * Gets an entry ID by the given product ID
-	 *
-	 * @param string $id
-	 *
-	 * @return int|null
-	 */
-	private function _getEntryIdByShopifyId ($id)
-	{
-		return (new Query())
-			->select('id')
-			->from('{{%storefront_products}}')
-			->where(['shopifyId' => $id])
-			->scalar();
-	}
-
-	/**
-	 * Gets a Shopify product ID by the given entry ID
-	 *
-	 * @param string|int $id
-	 *
-	 * @return string|null
-	 */
-	private function _getShopifyIdByEntryId ($id)
-	{
-		return (new Query())
-			->select('shopifyId')
-			->from('{{%storefront_products}}')
-			->where(['id' => $id])
-			->scalar();
-	}
 
 	/**
 	 * Validate that the given entry exists and is a Shopify generated entry
@@ -278,27 +247,7 @@ GQL;
 		if ($entry->getSection()->uid !== Storefront::getInstance()->getSettings()->productSectionUid)
 			return null;
 
-		return $this->_getShopifyIdByEntryId($entry->id);
-	}
-
-	/**
-	 * Normalize the product ID
-	 *
-	 * @param array $data
-	 *
-	 * @return string
-	 */
-	private function _normalizeId ($data)
-	{
-		if (array_key_exists('admin_graphql_api_id', $data))
-			return $data['admin_graphql_api_id'];
-
-		$id = $data['id'];
-
-		if (strpos($id, 'gid://shopify/Product/') !== false)
-			return $id;
-
-		return 'gid://shopify/Product/' . $id;
+		return Storefront::getInstance()->relations->getShopifyIdByElementId($entry->id);
 	}
 
 }
