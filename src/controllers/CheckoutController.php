@@ -30,13 +30,12 @@ class CheckoutController extends Controller
 		$variantId = $request->getRequiredBodyParam('variantId');
 		$quantity = $request->getBodyParam('quantity', 1);
 
-		// TODO: return any errors
-		$errors = Storefront::getInstance()->checkout->addLineItem($variantId, $quantity);
+		if ($errors = Storefront::getInstance()->checkout->addLineItem($variantId, $quantity))
+			Craft::$app->getUrlManager()->setRouteParams([
+				'variables' => ['errors' => $errors],
+			]);
 
-		if (!empty($errors))
-			Craft::dd($errors);
-
-		return $this->redirectToPostedUrl();
+		return null;
 	}
 
 	public function actionAddLineItems ()
@@ -46,12 +45,31 @@ class CheckoutController extends Controller
 
 	public function actionUpdateLineItem ()
 	{
-		// TODO: this
+		$request = Craft::$app->getRequest();
+
+		$id = $request->getRequiredBodyParam('id');
+		$quantity = $request->getRequiredBodyParam('quantity');
+
+		if ($errors = Storefront::getInstance()->checkout->updateLineItem($id, $quantity))
+			Craft::$app->getUrlManager()->setRouteParams([
+				'variables' => ['errors' => $errors],
+			]);
+
+		return null;
 	}
 
 	public function actionRemoveLineItem ()
 	{
-		// TODO: this
+		$request = Craft::$app->getRequest();
+
+		$id = $request->getRequiredBodyParam('id');
+
+		if ($errors = Storefront::getInstance()->checkout->removeLineItem($id))
+			Craft::$app->getUrlManager()->setRouteParams([
+				'variables' => ['errors' => $errors],
+			]);
+
+		return null;
 	}
 
 }

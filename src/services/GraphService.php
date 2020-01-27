@@ -110,12 +110,17 @@ class GraphService extends Component
 		$shop = $this->_settings()->shopHandle;
 		$endPoint = str_replace('{version}', self::$API_VERSION, $endPoint);
 
+		$request = Craft::$app->getRequest();
+
 		return $client[$tokenKey] = Craft::createGuzzleClient([
 			'base_uri' => "https://{$shop}.myshopify.com/{$endPoint}",
 			'headers' => [
 				'Accept' => 'application/json',
 				'Content-Type' => 'application/json',
 				$tokenKey => $token,
+				'User-Agent' => $request->getUserAgent(),
+				'Forwarded-For' => $request->getUserIP(),
+				'X-Forwarded-For' => $request->getUserIP(),
 			],
 		]);
 	}

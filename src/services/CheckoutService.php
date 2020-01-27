@@ -160,6 +160,98 @@ GQL;
 		return null;
 	}
 
+	/**
+	 * Update the qty of the given line item
+	 *
+	 * @param string $lineItemId
+	 * @param int $quantity
+	 *
+	 * @return array|null
+	 * @throws Exception
+	 * @throws MissingComponentException
+	 */
+	public function updateLineItem ($lineItemId, $quantity)
+	{
+		$query = <<<GQL
+mutation UpdateLineItem (
+	\$checkoutId: ID!
+	\$lineItems: [CheckoutLineItemUpdateInput!]!
+) {
+	update: checkoutLineItemsUpdate (
+		checkoutId: \$checkoutId
+		lineItems: \$lineItems
+	) {
+		userErrors {
+			message
+			field
+		}
+	}
+}
+GQL;
+
+		$id = $this->getCheckoutId();
+		$res = Storefront::getInstance()->graph->storefront($query, [
+			'checkoutId' => $id,
+			'lineItems' => [[
+				'id' => $lineItemId,
+				'quantity' => (int) $quantity,
+			]],
+		]);
+
+		if (array_key_exists('errors', $res))
+			return $res['errors'];
+
+		if (!empty($res['update']['userErrors']))
+			return $res['update']['userErrors'];
+
+		$this->onUpdate(['id' => $id]);
+		return null;
+	}
+
+	/**
+	 * Removes the given line item from the checkout
+	 *
+	 * @param string $lineItemId
+	 *
+	 * @return array|null
+	 * @throws Exception
+	 * @throws MissingComponentException
+	 */
+	public function removeLineItem ($lineItemId)
+	{
+		$query = <<<GQL
+mutation RemoveLineItem (
+	\$checkoutId: ID!
+	\$lineItemIds: [ID!]!
+) {
+	remove: checkoutLineItemsRemove (
+		checkoutId: \$checkoutId
+		lineItemIds: \$lineItemIds
+	) {
+		userErrors {
+			message
+			field
+		}
+	}
+}
+GQL;
+
+		$id = $this->getCheckoutId();
+		$res = Storefront::getInstance()->graph->storefront($query, [
+			'checkoutId' => $id,
+			'lineItemIds' => [$lineItemId],
+		]);
+
+		if (array_key_exists('errors', $res))
+			return $res['errors'];
+
+		if (!empty($res['remove']['userErrors']))
+			return $res['remove']['userErrors'];
+
+		$this->onUpdate(['id' => $id]);
+		return null;
+	}
+
 	// Private
 	// =========================================================================
 
