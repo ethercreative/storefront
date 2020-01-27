@@ -111,6 +111,9 @@ class CheckoutService extends Component
 			])->execute();
 	}
 
+	// Line Items
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Will add a single line item to the cart. Returns null on success, or an
 	 * array of errors on failure.
@@ -247,6 +250,94 @@ GQL;
 
 		if (!empty($res['remove']['userErrors']))
 			return $res['remove']['userErrors'];
+
+		$this->onUpdate(['id' => $id]);
+		return null;
+	}
+
+	// Discount Codes
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Applies the given discount code to the checkout
+	 *
+	 * @param string $code
+	 *
+	 * @return null
+	 * @throws Exception
+	 * @throws MissingComponentException
+	 */
+	public function applyDiscountCode ($code)
+	{
+		$query = <<<GQL
+mutation ApplyDiscountCode (
+	\$checkoutId: ID!
+	\$code: String!
+) {
+	apply: checkoutDiscountCodeApplyV2 (
+		checkoutId: \$checkoutId
+		discountCode: \$code
+	) {
+		checkoutUserErrors {
+			message
+			field
+			code
+		}
+	}
+}
+GQL;
+
+		$id = $this->getCheckoutId();
+		$res = Storefront::getInstance()->graph->storefront($query, [
+			'checkoutId' => $id,
+			'code' => $code,
+		]);
+
+		if (array_key_exists('errors', $res))
+			return $res['errors'];
+
+		if (!empty($res['apply']['checkoutUserErrors']))
+			return $res['apply']['checkoutUserErrors'];
+
+		$this->onUpdate(['id' => $id]);
+		return null;
+	}
+
+	/**
+	 * Removes the discount code from the checkout
+	 *
+	 * @return null
+	 * @throws Exception
+	 * @throws MissingComponentException
+	 */
+	public function removeDiscountCode ()
+	{
+		$query = <<<GQL
+mutation RemoveDiscountCode (
+	\$checkoutId: ID!
+) {
+	remove: checkoutDiscountCodeRemove (
+		checkoutId: \$checkoutId
+	) {
+		checkoutUserErrors {
+			message
+			field
+			code
+		}
+	}
+}
+GQL;
+
+		$id = $this->getCheckoutId();
+		$res = Storefront::getInstance()->graph->storefront($query, [
+			'checkoutId' => $id,
+		]);
+
+		if (array_key_exists('errors', $res))
+			return $res['errors'];
+
+		if (!empty($res['remove']['checkoutUserErrors']))
+			return $res['remove']['checkoutUserErrors'];
 
 		$this->onUpdate(['id' => $id]);
 		return null;
