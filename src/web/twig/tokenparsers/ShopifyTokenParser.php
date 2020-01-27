@@ -47,6 +47,7 @@ class ShopifyTokenParser extends AbstractTokenParser
 			'handle' => 'shopify',
 			'variables' => new ArrayExpression([], $lineNo),
 			'api' => 'storefront',
+			'cache' => false,
 		];
 
 		// Get the variable name
@@ -63,6 +64,11 @@ class ShopifyTokenParser extends AbstractTokenParser
 			$attributes['api'] = $stream->getCurrent()->getValue();
 			$stream->next();
 		}
+
+		// Should we cache the response?
+		if ($stream->nextIf(Token::OPERATOR_TYPE, 'and'))
+			if ($stream->nextIf(Token::NAME_TYPE, 'cache'))
+				$attributes['cache'] = true;
 
 		// Capture the contents
 		$stream->expect(Token::BLOCK_END_TYPE);

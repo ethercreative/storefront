@@ -29,6 +29,7 @@ class ShopifyNode extends Node implements NodeCaptureInterface
 		$handle = $this->getAttribute('handle');
 		$variables = $this->getAttribute('variables');
 		$api = $this->getAttribute('api');
+		$cache = $this->getAttribute('cache');
 		$query = $this->getNode('query');
 
 		$compiler
@@ -38,7 +39,8 @@ class ShopifyNode extends Node implements NodeCaptureInterface
 			->write('$context[\'' . $handle . '\'] = ')
 			->raw(Storefront::class . '::getInstance()->graph->template(\'' . $api . '\', ')
 			->raw('ob_get_clean(), ')
-			->raw($variables->compile($compiler) . ');' . PHP_EOL);
+			->raw($variables->compile($compiler) . ', ')
+			->raw($cache . ');' . PHP_EOL);
 	}
 
 }

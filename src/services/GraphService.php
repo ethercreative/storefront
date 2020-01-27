@@ -36,11 +36,12 @@ class GraphService extends Component
 	 * @param string $api
 	 * @param string $query
 	 * @param array  $variables
+	 * @param bool   $cache
 	 *
 	 * @return array
 	 * @throws Exception
 	 */
-	public function template ($api, $query, $variables = [])
+	public function template ($api, $query, $variables = [], $cache = false)
 	{
 		if (preg_match('/^\s*mutation\s*?\w*?\s*?\(/mi', $query))
 			throw new Exception('Mutations are not allowed in template queries!');
@@ -48,7 +49,7 @@ class GraphService extends Component
 		if ($api !== 'admin' && $api !== 'storefront')
 			$api = 'storefront';
 
-		return $this->$api($query, $variables);
+		return $this->$api($query, $variables, $cache);
 	}
 
 	/**
@@ -56,10 +57,11 @@ class GraphService extends Component
 	 *
 	 * @param string $query
 	 * @param array  $variables
+	 * @param bool   $cache
 	 *
 	 * @return array
 	 */
-	public function admin ($query, $variables = [])
+	public function admin ($query, $variables = [], $cache = false)
 	{
 		$client = $this->_client(
 			'X-Shopify-Access-Token',
@@ -67,7 +69,7 @@ class GraphService extends Component
 			'admin/api/{version}/graphql.json'
 		);
 
-		return $this->_query($client, $query, $variables);
+		return $this->_query($client, $query, $variables, $cache);
 	}
 
 	/**
@@ -75,10 +77,11 @@ class GraphService extends Component
 	 *
 	 * @param string $query
 	 * @param array  $variables
+	 * @param bool   $cache
 	 *
 	 * @return mixed
 	 */
-	public function storefront ($query, $variables = [])
+	public function storefront ($query, $variables = [], $cache = false)
 	{
 		$client = $this->_client(
 			'X-Shopify-Storefront-Access-Token',
@@ -86,7 +89,7 @@ class GraphService extends Component
 			'api/{version}/graphql'
 		);
 
-		return $this->_query($client, $query, $variables);
+		return $this->_query($client, $query, $variables, $cache);
 	}
 
 	// Private
@@ -125,7 +128,7 @@ class GraphService extends Component
 		]);
 	}
 
-	private function _query (Client $client, $query, $variables = [])
+	private function _query (Client $client, $query, $variables = [], $cache = false)
 	{
 		$body = [ 'query' => $query ];
 
@@ -135,6 +138,14 @@ class GraphService extends Component
 		$res = $client->post('', [
 			'body' => Json::encode($body),
 		])->getBody()->getContents();
+
+		// TODO: if cache is true:
+		//  - Cache variables & result by the query if not cached
+		//  - Return cached result if cached
+		//  - If variables have changed, break the cache
+		//  - Hook into our CacheHelper functions to break the cache if the ID
+		//    appears in the variables
+		//  - Add option to Clear Caches utility to clear all graph caches
 
 		return Json::decode($res, true);
 	}
