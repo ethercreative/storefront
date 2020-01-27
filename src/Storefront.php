@@ -13,8 +13,12 @@ use craft\base\Element;
 use craft\base\Model;
 use craft\base\Plugin;
 use craft\elements\Category;
+use craft\elements\db\CategoryQuery;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\errors\MissingComponentException;
+use craft\events\CancelableEvent;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -39,6 +43,7 @@ use Twig\Error\SyntaxError;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
+use yii\db\Expression;
 use yii\db\Query;
 
 /**
@@ -96,9 +101,9 @@ class Storefront extends Plugin
 		);
 
 		Event::on(
-			Element::class,
-			Element::EVENT_DEFINE_EAGER_LOADING_MAP,
-			[$this, 'onDefineElementEagerLoadingMap']
+			ElementQuery::class,
+			ElementQuery::EVENT_BEFORE_PREPARE,
+			[$this, 'onBeforeElementQueryPrepare']
 		);
 
 		Event::on(
@@ -244,52 +249,36 @@ class Storefront extends Plugin
 	}
 
 	/**
-	 * Automatically eager-load any Shopify related stuff, no .with() required
-	 *
-	 * FIXME: This only works if you are eager-loading something (it doesn't
-	 *   even have to exist) i.e. ..ries.with(['whatever']).al.. will work,
-	 *   but ..ries.al.. won't.
-	 * TODO: Try to find a workaround where this will always be called after
-	 *   we've gotten the elements. Perhaps injecting our own join code into
-	 *   ElementQuery::afterPrepare()?
-	 *
-	 * @param DefineEagerLoadingMapEvent $event
-	 *
-	 * @throws InvalidConfigException
+	 * @param CancelableEvent $event
 	 */
-	public function onDefineElementEagerLoadingMap (DefineEagerLoadingMapEvent $event)
+	public function onBeforeElementQueryPrepare (CancelableEvent $event)
 	{
-		/** @var Element[] $elements */
-		$elements = $event->sourceElements;
+		/** @var ElementQuery $query */
+		$query = $event->sender;
 
-		// Note: if we switch to injecting into the element query, we should
-		//   check the Query class to see what element we're querying, and the
-		//   already defined properties to see if it's a section or group we
-		//   care about
-		if (empty($elements) || !$this->_isShopifyElement($elements[0]))
+		if (!$this->_isShopifyQuery($query))
 			return;
 
-		$elementIds = [];
-
-		foreach ($elements as $element)
-			$elementIds[] = $element->id;
-
-		$map = (new Query())
-			->select('id, shopifyId')
-			->from('{{%storefront_relations}}')
-			->where(['id' => $elementIds])
-			->all();
-
-		$map = ArrayHelper::map($map, 'id', 'shopifyId');
-
-		foreach ($elements as $element)
-			if (array_key_exists($element->id, $map))
-				$element->shopifyId = $map[$element->id];
+		$query->addSelect('[[storefront_relations.shopifyId]]');
+		$query->leftJoin(
+			'{{%storefront_relations}}',
+			['[[elements.id]]' => new Expression('[[storefront_relations.id]]')]
+		);
 	}
 
 	// Helpers
 	// =========================================================================
 
+	/**
+	 * Format an array for use in a select field
+	 *
+	 * @param array  $array
+	 * @param bool   $includeNone
+	 * @param string $label
+	 * @param string $key
+	 *
+	 * @return mixed
+	 */
 	private static function _formatSelectOptions (
 		array $array,
 		$includeNone = false,
@@ -313,22 +302,43 @@ class Storefront extends Plugin
 	}
 
 	/**
-	 * Ensures the given element is one we care about
+	 * Ensures the given query is one we care about
 	 *
-	 * @param Element $element
+	 * @param ElementQuery $query
 	 *
 	 * @return bool
-	 * @throws InvalidConfigException
 	 */
-	private function _isShopifyElement (Element $element)
+	private function _isShopifyQuery (ElementQuery $query)
 	{
 		$settings = $this->getSettings();
 
-		if ($element instanceof Entry)
-			return $element->getSection()->uid === $settings->productSectionUid;
+		if ($query instanceof EntryQuery)
+		{
+			$section = $settings->getSection();
 
-		if ($element instanceof Category)
-			return $element->getGroup()->uid === $settings->collectionCategoryGroupUid;
+			if (empty($section))
+				return false;
+
+			return (
+				$query->sectionId === $section->id
+				|| in_array($section->id, $query->sectionId)
+				|| empty($query->sectionId)
+			);
+		}
+
+		if ($query instanceof CategoryQuery)
+		{
+			$group = $settings->getCategoryGroup();
+
+			if (empty($group))
+				return false;
+
+			return (
+				$query->groupId === $group->id
+				|| in_array($group->id, $query->groupId)
+				|| empty($query->groupId)
+			);
+		}
 
 		return false;
 	}

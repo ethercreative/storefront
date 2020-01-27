@@ -8,7 +8,10 @@
 
 namespace ether\storefront\models;
 
+use Craft;
 use craft\base\Model;
+use craft\models\CategoryGroup;
+use craft\models\Section;
 
 /**
  * Class Settings
@@ -63,5 +66,44 @@ class Settings extends Model
 	 * @var string The UID for the tag field on the product
 	 */
 	public $tagFieldUid = '';
+
+	// Getters
+	// =========================================================================
+
+	/**
+	 * Gets the products section
+	 *
+	 * @return Section|null
+	 */
+	public function getSection ()
+	{
+		static $section;
+
+		if ($section)
+			return $section;
+
+		if (!$this->productSectionUid)
+			return null;
+
+		return $section = Craft::$app->getSections()->getSectionByUid($this->productSectionUid);
+	}
+
+	/**
+	 * Gets the Collection category group
+	 *
+	 * @return CategoryGroup|null
+	 */
+	public function getCategoryGroup ()
+	{
+		static $group;
+
+		if ($group)
+			return $group;
+
+		if (!$this->collectionCategoryGroupUid)
+			return null;
+
+		return $group = Craft::$app->getCategories()->getGroupByUid($this->collectionCategoryGroupUid);
+	}
 
 }

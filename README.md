@@ -14,7 +14,7 @@
 - [x] Dynamically create / remove entries based on Shopify products (entries disabled by default)
 - [x] Dynamically create / remove categories based on Shopify collections (categories disabled by default)
 - [x] Show a snippet of the product in a custom field in the entry (use this custom field to get shopify product data)
-- [ ] Add shopify properties to product entries / collection categories (i.e. product.shopifyId)
+- [x] Add shopify properties to product entries / collection categories (i.e. product.shopifyId)
 - [ ] Add twig tags / endpoints to show / update the Shopify "checkouts" (carts)
 - [ ] Tie craft users to Shopify customers (SSO?)
 

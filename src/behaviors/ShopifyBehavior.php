@@ -28,7 +28,7 @@ class ShopifyBehavior extends Behavior
 
 	// Properties
 	// =========================================================================
-	// Note: These fields are populated by Storefront::onDefineElementEagerLoadingMap()
+	// Note: These fields are populated by Storefront::onBeforeElementQueryPrepare()
 
 	/** @var string The products Shopify ID */
 	public $shopifyId;
