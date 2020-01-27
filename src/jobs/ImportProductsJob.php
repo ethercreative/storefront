@@ -84,6 +84,9 @@ GQL;
 
 			if (!$res['data']['products']['pageInfo']['hasNextPage'])
 				$cursor = null;
+
+			// Sleep to prevent API spam
+			sleep(0.5);
 		} while ($cursor);
 
 		if (empty($products))

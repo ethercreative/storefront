@@ -39,6 +39,7 @@ class ProductsService extends Component
 fragment Product on Product {
 	id
 	title
+	handle
 	tags
 	# TODO: It would be nice to get all collections, but setting first to 250 
 	#  exceeds the query cost :(
@@ -122,6 +123,7 @@ GQL;
 		// ---------------------------------------------------------------------
 
 		$entry->title = $data['title'];
+		$entry->slug = $data['handle'];
 
 		// Content: Collections
 		// ---------------------------------------------------------------------
@@ -138,13 +140,13 @@ GQL;
 			// TODO: Handle pagination?
 			foreach ($data['collections']['edges'] as $edge)
 			{
-				$id = $relations->normalizeShopifyId(
+				$_id = $relations->normalizeShopifyId(
 					$edge['node']['id'],
 					ShopifyType::Collection
 				);
-				$collection = $collections->getCollectionById($id);
-				$id = $collections->upsert($collection);
-				if ($id) $ids[] = $id;
+				$collection = $collections->getCollectionById($_id);
+				$_id = $collections->upsert($collection);
+				if ($_id) $ids[] = $_id;
 			}
 
 			$entry->setFieldValue($collectionField->handle, $ids);

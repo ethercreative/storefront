@@ -8,7 +8,9 @@
 
 namespace ether\storefront\web;
 
+use craft\errors\MissingComponentException;
 use ether\storefront\Storefront;
+use yii\db\Exception;
 
 /**
  * Class Variable
@@ -55,6 +57,16 @@ class Variable
 			$labels[] = $option['name'];
 
 		return $labels;
+	}
+
+	/**
+	 * @return string
+	 * @throws MissingComponentException
+	 * @throws Exception
+	 */
+	public function getCheckoutId ()
+	{
+		return Storefront::getInstance()->checkout->getCheckoutId();
 	}
 
 }

@@ -38,4 +38,16 @@ class CacheHelper
 		Craft::debug("Clear caches for: $id", 'storefront');
 	}
 
+	/**
+	 * Clear the caches for the given checkout ID
+	 *
+	 * @param string $id
+	 */
+	public static function clearCheckoutCaches ($id)
+	{
+		Craft::$app->getCache()->delete($id);
+		Craft::$app->getTemplateCaches()->deleteCachesByKey($id);
+		Craft::debug("Clear caches for: $id", 'storefront');
+	}
+
 }

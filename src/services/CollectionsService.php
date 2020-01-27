@@ -36,6 +36,7 @@ class CollectionsService extends Component
 fragment Collection on Collection {
 	id
 	title
+	handle
 }
 GQL;
 	}
@@ -136,6 +137,7 @@ GQL;
 		}
 
 		$category->title = $data['title'];
+		$category->slug = $data['handle'];
 
 		if (Craft::$app->getElements()->saveElement($category))
 		{

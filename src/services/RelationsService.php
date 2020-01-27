@@ -49,7 +49,7 @@ class RelationsService extends Component
 				'shopifyId' => $shopifyId,
 				'type' => $type,
 			],
-			false
+			true
 		)->execute();
 	}
 
@@ -88,7 +88,7 @@ class RelationsService extends Component
 	public function getShopifyIdFromArray ($data, $type)
 	{
 		if (array_key_exists('admin_graphql_api_id', $data))
-			return $data['admin_graphql_api_id'];
+			return $this->normalizeShopifyId($data['admin_graphql_api_id'], $type);
 
 		return $this->normalizeShopifyId($data['id'], $type);
 	}

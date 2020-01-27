@@ -12,23 +12,20 @@ use Craft;
 use craft\base\Element;
 use craft\base\Model;
 use craft\base\Plugin;
-use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
 use craft\errors\MissingComponentException;
 use craft\events\CancelableEvent;
 use craft\events\DefineBehaviorsEvent;
-use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\Categories;
 use craft\fields\Tags;
-use craft\helpers\ArrayHelper;
 use craft\services\Utilities;
 use craft\web\twig\variables\CraftVariable;
 use ether\storefront\behaviors\ShopifyBehavior;
 use ether\storefront\models\Settings;
+use ether\storefront\services\CheckoutService;
 use ether\storefront\services\CollectionsService;
 use ether\storefront\services\GraphService;
 use ether\storefront\services\OrdersService;
@@ -44,7 +41,6 @@ use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\db\Expression;
-use yii\db\Query;
 
 /**
  * Class Storefront
@@ -57,6 +53,7 @@ use yii\db\Query;
  * @property OrdersService $orders
  * @property CollectionsService $collections
  * @property RelationsService $relations
+ * @property CheckoutService $checkout
  */
 class Storefront extends Plugin
 {
@@ -80,6 +77,7 @@ class Storefront extends Plugin
 			'products' => ProductsService::class,
 			'orders' => OrdersService::class,
 			'collections' => CollectionsService::class,
+			'checkout' => CheckoutService::class,
 		]);
 
 		Craft::$app->getView()->registerTwigExtension(
@@ -312,6 +310,9 @@ class Storefront extends Plugin
 	{
 		$settings = $this->getSettings();
 
+		if (!empty($query->select) && in_array('COUNT(*)', $query->select))
+			return false;
+
 		if ($query instanceof EntryQuery)
 		{
 			$section = $settings->getSection();
@@ -320,9 +321,9 @@ class Storefront extends Plugin
 				return false;
 
 			return (
-				$query->sectionId === $section->id
+				empty($query->sectionId)
+				|| $query->sectionId === $section->id
 				|| in_array($section->id, $query->sectionId)
-				|| empty($query->sectionId)
 			);
 		}
 
@@ -334,9 +335,9 @@ class Storefront extends Plugin
 				return false;
 
 			return (
-				$query->groupId === $group->id
+				empty($query->groupId)
+				|| $query->groupId === $group->id
 				|| in_array($group->id, $query->groupId)
-				|| empty($query->groupId)
 			);
 		}
 

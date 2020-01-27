@@ -14,6 +14,7 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
+use craft\web\assets\d3\D3Asset;
 use ether\storefront\Storefront;
 use Throwable;
 use yii\db\Exception;
@@ -53,6 +54,9 @@ class WebhookService extends Component
 			'COLLECTIONS_DELETE',
 
 			'ORDERS_CREATE',
+
+			'CHECKOUTS_UPDATE',
+			'CHECKOUTS_DELETE',
 		];
 
 		$existingHooks = $this->_getSavedWebhooks('hook');
@@ -211,6 +215,12 @@ GQL;
 				break;
 			case 'ORDERS_CREATE':
 				Storefront::getInstance()->orders->onCreate($json);
+				break;
+			case 'CHECKOUTS_UPDATE':
+				Storefront::getInstance()->checkout->onUpdate($json);
+				break;
+			case 'CHECKOUT_DELETE':
+				Storefront::getInstance()->checkout->delete($json);
 				break;
 		}
 	}
