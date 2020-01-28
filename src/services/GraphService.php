@@ -131,6 +131,7 @@ class GraphService extends Component
 
 	private function _query (Client $client, $query, $variables = [], $cache = false)
 	{
+		$cache = !preg_match('/^\s*mutation\s*?\w*?\s*?\(/mi', $query) && $cache;
 		$key = null;
 
 		if ($cache)
@@ -150,14 +151,6 @@ class GraphService extends Component
 		$res = $client->post('', [
 			'body' => Json::encode($body),
 		])->getBody()->getContents();
-
-		// TODO: if cache is true:
-		//  - [x] Cache variables & result by the query if not cached
-		//  - [x] Return cached result if cached
-		//  - [x] If variables have changed, break the cache
-		//  - [x] Hook into our CacheHelper functions to break the cache if the
-		//        ID appears in the variables
-		//  - [ ] Add option to Clear Caches utility to clear all graph caches
 
 		$value = Json::decode($res, true);
 

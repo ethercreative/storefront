@@ -18,12 +18,15 @@ use craft\elements\db\EntryQuery;
 use craft\errors\MissingComponentException;
 use craft\events\CancelableEvent;
 use craft\events\DefineBehaviorsEvent;
+use craft\events\RegisterCacheOptionsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\Categories;
 use craft\fields\Tags;
 use craft\services\Utilities;
+use craft\utilities\ClearCaches;
 use craft\web\twig\variables\CraftVariable;
 use ether\storefront\behaviors\ShopifyBehavior;
+use ether\storefront\helpers\CacheHelper;
 use ether\storefront\models\Settings;
 use ether\storefront\services\CheckoutService;
 use ether\storefront\services\CollectionsService;
@@ -108,6 +111,12 @@ class Storefront extends Plugin
 			CraftVariable::class,
 			CraftVariable::EVENT_INIT,
 			[$this, 'onRegisterVariable']
+		);
+
+		Event::on(
+			ClearCaches::class,
+			ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
+			[$this, 'onRegisterClearCacheOptions']
 		);
 
 		// Edit Tabs
@@ -262,6 +271,18 @@ class Storefront extends Plugin
 			'{{%storefront_relations_to_elements}}',
 			['[[elements.id]]' => new Expression('[[storefront_relations_to_elements.elementId]]')]
 		);
+	}
+
+	/**
+	 * @param RegisterCacheOptionsEvent $event
+	 */
+	public function onRegisterClearCacheOptions (RegisterCacheOptionsEvent $event)
+	{
+		$event->options[] = [
+			'key' => 'storefront-shopify-caches',
+			'label' => 'Shopify caches',
+			'action' => function () { CacheHelper::clearAllCaches(); },
+		];
 	}
 
 	// Helpers

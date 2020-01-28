@@ -24,6 +24,23 @@ class CacheHelper
 {
 
 	/**
+	 * Clears all Shopify caches
+	 *
+	 * @throws \yii\db\Exception
+	 */
+	public static function clearAllCaches ()
+	{
+		$db = Craft::$app->getDb();
+		$transaction = $db->beginTransaction();
+
+		$db->createCommand()
+			->delete('{{%storefront_caches}}')
+			->execute();
+
+		$transaction->commit();
+	}
+
+	/**
 	 * Clear the caches for the given Shopify ID
 	 *
 	 * @param string $id
