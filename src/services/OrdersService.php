@@ -9,7 +9,7 @@
 namespace ether\storefront\services;
 
 use craft\base\Component;
-use ether\storefront\Storefront;
+use ether\storefront\helpers\CacheHelper;
 
 /**
  * Class OrdersService
@@ -22,13 +22,11 @@ class OrdersService extends Component
 
 	public function onCreate (array $data)
 	{
-		$products = Storefront::getInstance()->products;
-
 		// Clear the caches for all products in the order to ensure our stock
 		// is up-to-date
 		foreach ($data['line_items'] as $item)
 			if ($item['product_exists'])
-				$products->clearCaches($item['product_id']);
+				CacheHelper::clearCachesByShopifyId($item['product_id'], RelationsService::TYPE_PRODUCT);
 	}
 
 }

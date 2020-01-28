@@ -257,10 +257,10 @@ class Storefront extends Plugin
 		if (!$this->_isShopifyQuery($query))
 			return;
 
-		$query->addSelect('[[storefront_relations.shopifyId]]');
+		$query->addSelect('[[storefront_relations_to_elements.shopifyId]]');
 		$query->leftJoin(
-			'{{%storefront_relations}}',
-			['[[elements.id]]' => new Expression('[[storefront_relations.id]]')]
+			'{{%storefront_relations_to_elements}}',
+			['[[elements.id]]' => new Expression('[[storefront_relations_to_elements.elementId]]')]
 		);
 	}
 

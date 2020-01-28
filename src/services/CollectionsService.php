@@ -147,9 +147,9 @@ GQL;
 				return $categoryId;
 
 			$relations->store(
-				$category->id,
 				$id,
-				ShopifyType::Collection
+				ShopifyType::Collection,
+				$category->id
 			);
 		}
 		else

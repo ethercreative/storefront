@@ -170,7 +170,7 @@ GQL;
 			);
 
 			$ids = [];
-			$existingTags = Tag::find()->groupId($tagGroup->id)->select('elements_sites.slug,elements.id')->pairs();
+			$existingTags = Tag::find()->groupId($tagGroup->id)->select('elements_sites.slug, elements.id')->pairs();
 
 			foreach ($data['tags'] as $tag)
 			{
@@ -205,9 +205,9 @@ GQL;
 				return;
 
 			$relations->store(
-				$entry->id,
 				$id,
-				ShopifyType::Product
+				ShopifyType::Product,
+				$entry->id
 			);
 		}
 		else

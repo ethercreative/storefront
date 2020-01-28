@@ -1,7 +1,5 @@
 {% do craft.app.view.registerAssetBundle('ether\\storefront\\web\\assets\\ShopifyAsset') %}
 
-{# We clear all caches using the product ID when the product is updated #}
-{% cache using key id %}
 {# gql is the name of the variable #}
 {# with {} is an optional object of variables #}
 {# as admin means run this command using the admin api rather than the storefront api #}
@@ -26,7 +24,7 @@
 
 {% shopify gql with {
 	id: id
-} as admin %}
+} as admin and cache %}
 	query GetProduct ($id: ID!) {
 		product (id: $id) {
 			id
@@ -233,4 +231,3 @@
 		{% endif %}
 	{% endif %}
 </div>
-{% endcache %}

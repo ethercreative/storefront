@@ -14,7 +14,6 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
-use craft\web\assets\d3\D3Asset;
 use ether\storefront\Storefront;
 use Throwable;
 use yii\db\Exception;

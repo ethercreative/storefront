@@ -56,7 +56,8 @@ class ShopifyTokenParser extends AbstractTokenParser
 
 		// Do we have variables?
 		if ($stream->nextIf(Token::NAME_TYPE, 'with'))
-			$attributes['variables'] = $expressionParser->parseHashExpression();
+			$attributes['variables'] =
+				$expressionParser->parseHashExpression();
 
 		// Are we defining the API type?
 		if ($stream->nextIf(Token::NAME_TYPE, 'as'))

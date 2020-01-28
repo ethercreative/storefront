@@ -27,6 +27,7 @@ class RelationsService extends Component
 
 	const TYPE_PRODUCT = 'Product';
 	const TYPE_COLLECTION = 'Collection';
+	const TYPE_CHECKOUT = 'Checkout';
 
 	// Methods
 	// =========================================================================
@@ -34,23 +35,34 @@ class RelationsService extends Component
 	/**
 	 * Stores the given relation
 	 *
-	 * @param int $elementId
 	 * @param string $shopifyId
 	 * @param string $type - ShopifyType
+	 * @param int|null $elementId
 	 *
 	 * @throws Exception
 	 */
-	public function store ($elementId, $shopifyId, $type)
+	public function store ($shopifyId, $type, $elementId = null)
 	{
 		Craft::$app->getDb()->createCommand()->insert(
 			'{{%storefront_relations}}',
 			[
-				'id' => $elementId,
 				'shopifyId' => $shopifyId,
 				'type' => $type,
 			],
 			true
 		)->execute();
+
+		if ($elementId)
+		{
+			Craft::$app->getDb()->createCommand()->insert(
+				'{{%storefront_relations_to_elements}}',
+				[
+					'shopifyId' => $shopifyId,
+					'elementId' => $elementId,
+				],
+				false
+			)->execute();
+		}
 	}
 
 	/**
@@ -63,8 +75,8 @@ class RelationsService extends Component
 	public function getElementIdByShopifyId ($id)
 	{
 		return (new Query())
-			->select('id')
-			->from('{{%storefront_relations}}')
+			->select('elementId')
+			->from('{{%storefront_relations_to_elements}}')
 			->where(['shopifyId' => $id])
 			->scalar();
 	}
@@ -80,8 +92,8 @@ class RelationsService extends Component
 	{
 		return (new Query())
 			->select('shopifyId')
-			->from('{{%storefront_relations}}')
-			->where(['id' => $id])
+			->from('{{%storefront_relations_to_elements}}')
+			->where(['elementId' => $id])
 			->scalar();
 	}
 

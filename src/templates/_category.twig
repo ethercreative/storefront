@@ -1,121 +1,117 @@
 {% do craft.app.view.registerAssetBundle('ether\\storefront\\web\\assets\\ShopifyAsset') %}
 
-{% cache using key id %}
-
-	{% shopify gql with {
-		id: id
-	} as admin %}
-		query GetCollection ($id: ID!) {
-			collection (id: $id) {
-				id
-				title
-				productsCount
-				descriptionHtml
-				image {
-					transformedSrc
-					altText
-				}
-				low: products (
-					first: 1
-					sortKey: PRICE
-				) {
-					edges {
-						node {
-							price: priceRange {
-								min: minVariantPrice {
-									amount
-									code: currencyCode
-								}
+{% shopify gql with {
+	id: id
+} as admin and cache %}
+	query GetCollection ($id: ID!) {
+		collection (id: $id) {
+			id
+			title
+			productsCount
+			descriptionHtml
+			image {
+				transformedSrc
+				altText
+			}
+			low: products (
+				first: 1
+				sortKey: PRICE
+			) {
+				edges {
+					node {
+						price: priceRange {
+							min: minVariantPrice {
+								amount
+								code: currencyCode
 							}
 						}
 					}
 				}
-				high: products (
-					first: 1
-					sortKey: PRICE
-					reverse: true
-				) {
-					edges {
-						node {
-							price: priceRange {
-								max: maxVariantPrice {
-									amount
-								}
+			}
+			high: products (
+				first: 1
+				sortKey: PRICE
+				reverse: true
+			) {
+				edges {
+					node {
+						price: priceRange {
+							max: maxVariantPrice {
+								amount
 							}
 						}
 					}
 				}
 			}
 		}
-	{% endshopify %}
+	}
+{% endshopify %}
 
-	<div id="storefront-tab-shopify" {% if not visible %}class="hidden"{% endif %}>
-		{% if 'errors' in gql|keys %}
-			<div class="shopify-wrap">
-				<h3 style="color:#da5a47">Something went wrong!</h3>
-				<ul class="errors">
-					{% for error in gql.errors %}
-						<li>{{ error.message }}</li>
-					{% endfor %}
-				</ul>
-			</div>
-		{% else %}
-			{% set collection = gql.data.collection %}
+<div id="storefront-tab-shopify" {% if not visible %}class="hidden"{% endif %}>
+	{% if 'errors' in gql|keys %}
+		<div class="shopify-wrap">
+			<h3 style="color:#da5a47">Something went wrong!</h3>
+			<ul class="errors">
+				{% for error in gql.errors %}
+					<li>{{ error.message }}</li>
+				{% endfor %}
+			</ul>
+		</div>
+	{% else %}
+		{% set collection = gql.data.collection %}
 
-			<div class="shopify-wrap">
-				<div class="shopify-flex">
-					{% if collection.image %}
-						<img
-							src="{{ collection.image.transformedSrc }}"
-							alt="{{ collection.image.altText }}"
-						/>
-					{% endif %}
-					<div class="shopify-details">
-						<header>
-							<div>
-								<h1>{{ collection.title }}</h1>
+		<div class="shopify-wrap">
+			<div class="shopify-flex">
+				{% if collection.image %}
+					<img
+						src="{{ collection.image.transformedSrc }}"
+						alt="{{ collection.image.altText }}"
+					/>
+				{% endif %}
+				<div class="shopify-details">
+					<header>
+						<div>
+							<h1>{{ collection.title }}</h1>
 
-								{% if collection.productsCount > 0 %}
-									<div class="shopify-price">
-										{% set low = collection.low.edges[0].node.price.min %}
-										{% set high = collection.high.edges[0].node.price.max %}
+							{% if collection.productsCount > 0 %}
+								<div class="shopify-price">
+									{% set low = collection.low.edges[0].node.price.min %}
+									{% set high = collection.high.edges[0].node.price.max %}
 
-										{% set min = low.amount / 100 %}
-										{% set max = high.amount / 100 %}
-										{% set code = low.code %}
+									{% set min = low.amount / 100 %}
+									{% set max = high.amount / 100 %}
+									{% set code = low.code %}
 
-										{% if min == max %}
-											{{ code }} {{ min|currency(code, stripZeros=true) }}
-										{% else %}
-											{{ code }} {{ min|currency(code, stripZeros=true) }} - {{ max|currency(code, stripZeros=true) }}
-										{% endif %}
-									</div>
-								{% endif %}
-
-								<div class="shopify-stock _info">
-									<strong>{{ collection.productsCount }}</strong>
-									products are in this collection
+									{% if min == max %}
+										{{ code }} {{ min|currency(code, stripZeros=true) }}
+									{% else %}
+										{{ code }} {{ min|currency(code, stripZeros=true) }} - {{ max|currency(code, stripZeros=true) }}
+									{% endif %}
 								</div>
-							</div>
+							{% endif %}
 
-							<div>
-								<a href="{{ craft.storefront.getCollectionEditUrl(collection.id) }}" target="_blank" class="btn secondary" data-icon-after="share">
-									View on Shopify
-								</a>
+							<div class="shopify-stock _info">
+								<strong>{{ collection.productsCount }}</strong>
+								products are in this collection
 							</div>
-						</header>
+						</div>
 
-						{% if collection.descriptionHtml %}
-							<hr>
-							{{ collection.descriptionHtml|replace({
-								'<h1>': '<h2>',
-								'</h1>': '</h2>',
-							})|raw }}
-						{% endif %}
-					</div>
+						<div>
+							<a href="{{ craft.storefront.getCollectionEditUrl(collection.id) }}" target="_blank" class="btn secondary" data-icon-after="share">
+								View on Shopify
+							</a>
+						</div>
+					</header>
+
+					{% if collection.descriptionHtml %}
+						<hr>
+						{{ collection.descriptionHtml|replace({
+							'<h1>': '<h2>',
+							'</h1>': '</h2>',
+						})|raw }}
+					{% endif %}
 				</div>
 			</div>
-		{% endif %}
-	</div>
-
-{% endcache %}
+		</div>
+	{% endif %}
+</div>

@@ -52,9 +52,10 @@ class CheckoutService extends Component
 
 		if ($id = Craft::$app->getUser()->getId())
 			$this->_checkoutId = (new Query())
-				->select('id')
-				->from('{{%storefront_checkouts}}')
-				->where(['userId' => $id, 'dateCompleted' => null])
+				->select('p.shopifyId')
+				->from('{{%storefront_relations_to_elements}} p')
+				->where(['p.elementId' => $id, 'c.dateCompleted' => null])
+				->leftJoin('{{%storefront_checkouts}} c', '[[c.shopifyId]] = [[p.shopifyId]]')
 				->scalar();
 
 		// TODO: merge with previously stored, incomplete carts if user is logged in?
@@ -69,7 +70,7 @@ class CheckoutService extends Component
 					->select('id')
 					->from('{{%storefront_checkouts}}')
 					->where([
-						'id' => $this->_checkoutId,
+						'shopifyId' => base64_decode($this->_checkoutId),
 						['!=', 'dateCompleted', null],
 					])
 					->exists();
@@ -107,7 +108,7 @@ class CheckoutService extends Component
 		CacheHelper::clearCheckoutCaches($data['id']);
 		Craft::$app->getDb()->createCommand()
 			->delete('{{%storefront_checkouts}}', [
-				'id' => $data['id'],
+				'shopifyId' => base64_decode($data['id']),
 			])->execute();
 	}
 
@@ -392,13 +393,31 @@ GQL;
 
 		$this->_checkoutId = $res['data']['checkoutCreate']['checkout']['id'];
 		Craft::$app->getSession()->set(self::CHECKOUT_KEY, $this->_checkoutId);
-		Craft::$app->getDb()->createCommand()
-			->insert('{{%storefront_checkouts}}', [
-				'id' => $this->_checkoutId,
-				'userId' => $user ? $user->id : null,
-			], false)->execute();
+
+		$shopifyId = base64_decode($this->_checkoutId);
+		$this->store($shopifyId, $user ? $user->id : null);
 
 		return $this->_checkoutId;
+	}
+
+	/**
+	 * @param string $shopifyId
+	 * @param null $elementId
+	 *
+	 * @throws Exception
+	 */
+	private function store ($shopifyId, $elementId = null)
+	{
+		Storefront::getInstance()->relations->store(
+			$shopifyId,
+			RelationsService::TYPE_CHECKOUT,
+			$elementId
+		);
+
+		Craft::$app->getDb()->createCommand()
+			->insert('{{%storefront_checkouts}}', [
+				'shopifyId' => $shopifyId,
+			], false)->execute();
 	}
 
 }
