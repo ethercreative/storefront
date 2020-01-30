@@ -15,6 +15,16 @@ use ether\storefront\helpers\CacheHelper;
 use ether\storefront\models\Settings;
 use ether\storefront\Storefront;
 use Exception;
+use GraphQL\Error\SyntaxError;
+use GraphQL\Language\AST\FieldNode;
+use GraphQL\Language\AST\ListTypeNode;
+use GraphQL\Language\AST\NamedTypeNode;
+use GraphQL\Language\AST\NodeKind;
+use GraphQL\Language\AST\NonNullTypeNode;
+use GraphQL\Language\AST\SelectionSetNode;
+use GraphQL\Language\AST\VariableDefinitionNode;
+use GraphQL\Language\Parser;
+use GraphQL\Language\Visitor;
 use GuzzleHttp\Client;
 
 /**
@@ -47,7 +57,7 @@ class GraphService extends Component
 		if (preg_match('/^\s*mutation\s*?\w*?\s*?\(/mi', $query))
 			throw new Exception('Mutations are not allowed in template queries!');
 
-		if ($api !== 'admin' && $api !== 'storefront')
+		if ($api !== 'admin')
 			$api = 'storefront';
 
 		return $this->$api($query, $variables, $cache);
@@ -91,6 +101,91 @@ class GraphService extends Component
 		);
 
 		return $this->_query($client, $query, $variables, $cache);
+	}
+
+	// Helpers
+	// =========================================================================
+
+	/**
+	 * @param string $query
+	 * @param array  $variables
+	 * @param array  $result
+	 *
+	 * @return array
+	 * @throws SyntaxError
+	 */
+	public static function getIdsFromQuery ($query, $variables, $result)
+	{
+		$ast = Parser::parse($query);
+		$ids = [];
+
+		Visitor::visit($ast, [
+			'leave' => [
+				NodeKind::VARIABLE_DEFINITION => function (VariableDefinitionNode $node, $key, $parent, $path) use (&$ids, $variables) {
+					$isArray = false;
+					$originalNode = $node;
+
+					if ($node->type instanceof NonNullTypeNode)
+						$node = $node->type;
+
+					if ($node->type instanceof ListTypeNode)
+					{
+						$isArray = true;
+						$node = $node->type;
+					}
+
+					if ($node->type instanceof NamedTypeNode)
+						$node = $node->type;
+
+					if ($node->name->value !== 'ID')
+						return null;
+
+					$name = $originalNode->variable->name->value;
+
+					if ($isArray) $ids = array_merge($ids, $variables[$name]);
+					else $ids[] = $variables[$name];
+
+					return null;
+				},
+				NodeKind::FIELD => function (FieldNode $node, $key, $parent, $path, $ancestors) use (&$ids, $result) {
+					if (!array_key_exists('data', $result))
+						return null;
+
+					if ($node->name->value !== 'id')
+						return null;
+
+					$path = [];
+
+					foreach ($ancestors as $node) {
+						if (!($node instanceof FieldNode))
+							continue;
+
+						$path[] = $node->alias ? $node->alias->value : $node->name->value;
+					}
+
+					if ($node instanceof SelectionSetNode)
+						$node = $node->selections[0];
+
+					$path[] = $node->alias ? $node->alias->value : $node->name->value;
+
+					$data = self::_traversePath($path, $result['data']);
+
+					if ($data !== null)
+						$ids[] = $data;
+
+					return null;
+				},
+			],
+		]);
+
+		$ids = array_filter($ids);
+
+		foreach ($ids as $i => $id)
+			if (strpos($id, 'gid://') === false)
+				$ids[$i] = base64_decode($id);
+
+		Craft::dd(array_unique($ids, SORT_STRING));
+		return array_unique($ids, SORT_STRING);
 	}
 
 	// Private
@@ -155,9 +250,35 @@ class GraphService extends Component
 		$value = Json::decode($res, true);
 
 		if ($cache)
-			CacheHelper::set($key, $value, $variables);
+			CacheHelper::set($key, $value, $query, $variables);
 
 		return $value;
+	}
+
+	private static function _traversePath ($path, $data)
+	{
+		foreach ($path as $i => $step)
+		{
+			if (!is_array($data) || !array_key_exists($step, $data))
+				return null;
+
+			if ($step === 'edges')
+			{
+//				$items = [];
+//				$pth = array_slice($path, $i + 1);
+//
+//				foreach ($data[$step] as $item)
+//					$items[] = self::_traversePath($pth, $item);
+//
+//				$data = $items;
+				// FIXME: Failing to get the IDs from lineItem variants
+				Craft::dd($data[$step]);
+				$data = $data[$step][0];
+			}
+			else $data = $data[$step];
+		}
+
+		return $data;
 	}
 
 }

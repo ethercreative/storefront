@@ -236,8 +236,7 @@ CREATE TRIGGER {$name} {$event} ON {$table}
 {$loop} EXECUTE PROCEDURE trigger_{$name}();
 SQL;
 		}
-
-
+		
 		foreach ($sql as $cmd)
 			$this->getDb()->createCommand()
 				->setSql(new Expression($cmd))

@@ -10,6 +10,7 @@ namespace ether\storefront\helpers;
 
 use Craft;
 use craft\helpers\Json;
+use ether\storefront\services\GraphService;
 use ether\storefront\Storefront;
 use Exception;
 use yii\db\Query;
@@ -111,9 +112,10 @@ class CacheHelper
 	 *
 	 * @param string $key
 	 * @param mixed $value
+	 * @param string $query
 	 * @param array $variables
 	 */
-	public static function set ($key, $value, $variables = [])
+	public static function set ($key, $value, $query, $variables = [])
 	{
 		$db = Craft::$app->getDb();
 
@@ -126,20 +128,8 @@ class CacheHelper
 				'key' => $key,
 			], [], false)->execute();
 
-			// TODO: look for ID's in the value we're storing
-			//  This means we can break the cache if, say, a product returned in
-			//  the results was updated.
-			// TODO: Also store checkout IDs
-			// Note: for both of the above, it would be best to parse the query
-			//  to find all the params / properties that are IDs and store them
-			//  (since storefront IDs are base64 encoded because of course)
-			preg_match_all(
-				'/gid:\/\/shopify\/\w*\/((?!gid)\w)*(\?key=((?!gid)\w)*)?/m',
-				Json::encode($variables),
-				$matches
-			);
-
-			foreach ($matches[0] as $shopifyId)
+			$ids = GraphService::getIdsFromQuery($query, $variables, $value);
+			foreach ($ids as $shopifyId)
 			{
 				$db->createCommand()->upsert('{{%storefront_relations_to_caches}}', [
 					'shopifyId' => $shopifyId,

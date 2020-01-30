@@ -67,10 +67,10 @@ class CheckoutService extends Component
 			if ($this->_checkoutId)
 			{
 				$completed = (new Query())
-					->select('id')
 					->from('{{%storefront_checkouts}}')
 					->where([
-						'shopifyId' => base64_decode($this->_checkoutId),
+						'and',
+						['=', 'shopifyId', base64_decode($this->_checkoutId)],
 						['!=', 'dateCompleted', null],
 					])
 					->exists();
