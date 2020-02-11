@@ -11,6 +11,7 @@ namespace ether\storefront\services;
 use Craft;
 use craft\base\Component;
 use craft\helpers\Json;
+use ether\storefront\helpers\ArrayHelper;
 use ether\storefront\helpers\CacheHelper;
 use ether\storefront\models\Settings;
 use ether\storefront\Storefront;
@@ -113,11 +114,14 @@ class GraphService extends Component
 	 *
 	 * @return array
 	 * @throws SyntaxError
+	 * @throws Exception
 	 */
 	public static function getIdsFromQuery ($query, $variables, $result)
 	{
 		$ast = Parser::parse($query);
 		$ids = [];
+
+		$paths = [];
 
 		Visitor::visit($ast, [
 			'leave' => [
@@ -147,7 +151,7 @@ class GraphService extends Component
 
 					return null;
 				},
-				NodeKind::FIELD => function (FieldNode $node, $key, $parent, $path, $ancestors) use (&$ids, $result) {
+				NodeKind::FIELD => function (FieldNode $node, $key, $parent, $path, $ancestors) use (&$ids, $result, &$paths) {
 					if (!array_key_exists('data', $result))
 						return null;
 
@@ -169,6 +173,7 @@ class GraphService extends Component
 					$path[] = $node->alias ? $node->alias->value : $node->name->value;
 
 					$data = self::_traversePath($path, $result['data']);
+					$paths[] = compact('path', 'data', 'result');
 
 					if ($data !== null)
 						$ids[] = $data;
@@ -178,13 +183,13 @@ class GraphService extends Component
 			],
 		]);
 
+		$ids = ArrayHelper::flatten($ids);
 		$ids = array_filter($ids);
 
 		foreach ($ids as $i => $id)
 			if (strpos($id, 'gid://') === false)
 				$ids[$i] = base64_decode($id);
 
-		Craft::dd(array_unique($ids, SORT_STRING));
 		return array_unique($ids, SORT_STRING);
 	}
 
@@ -260,20 +265,17 @@ class GraphService extends Component
 		foreach ($path as $i => $step)
 		{
 			if (!is_array($data) || !array_key_exists($step, $data))
-				return null;
+				continue;
 
 			if ($step === 'edges')
 			{
-//				$items = [];
-//				$pth = array_slice($path, $i + 1);
-//
-//				foreach ($data[$step] as $item)
-//					$items[] = self::_traversePath($pth, $item);
-//
-//				$data = $items;
-				// FIXME: Failing to get the IDs from lineItem variants
-				Craft::dd($data[$step]);
-				$data = $data[$step][0];
+				$items = [];
+				$pth = array_slice($path, $i + 1);
+
+				foreach ($data[$step] as $item)
+					$items[] = self::_traversePath($pth, $item);
+
+				$data = $items;
 			}
 			else $data = $data[$step];
 		}

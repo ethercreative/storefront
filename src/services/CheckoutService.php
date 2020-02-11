@@ -80,6 +80,9 @@ class CheckoutService extends Component
 			}
 		}
 
+		if (strpos($this->_checkoutId, 'gid://') !== false)
+			$this->_checkoutId = base64_encode($this->_checkoutId);
+
 		if ($this->_checkoutId)
 			return $this->_checkoutId;
 

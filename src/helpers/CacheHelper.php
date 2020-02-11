@@ -131,6 +131,13 @@ class CacheHelper
 			$ids = GraphService::getIdsFromQuery($query, $variables, $value);
 			foreach ($ids as $shopifyId)
 			{
+				// Ignore CheckoutLineItems & ProductVariants since we're not
+				// tracking them in any way
+				if (
+					strpos($shopifyId, 'CheckoutLineItem') !== false ||
+					strpos($shopifyId, 'ProductVariant') !== false
+				) continue;
+
 				$db->createCommand()->upsert('{{%storefront_relations_to_caches}}', [
 					'shopifyId' => $shopifyId,
 					'cacheKey' => $key,
