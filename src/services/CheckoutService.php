@@ -11,6 +11,7 @@ namespace ether\storefront\services;
 use Craft;
 use craft\base\Component;
 use craft\errors\MissingComponentException;
+use ether\storefront\enums\ShopifyType;
 use ether\storefront\helpers\CacheHelper;
 use ether\storefront\Storefront;
 use yii\db\Exception;
@@ -50,7 +51,9 @@ class CheckoutService extends Component
 		if ($this->_checkoutId)
 			return $this->_checkoutId;
 
-		if ($id = Craft::$app->getUser()->getId())
+		$this->_checkoutId = Craft::$app->getSession()->get(self::CHECKOUT_KEY);
+
+		if ($id = Craft::$app->getUser()->getId() && !$this->_checkoutId)
 			$this->_checkoutId = (new Query())
 				->select('p.shopifyId')
 				->from('{{%storefront_relations_to_elements}} p')
@@ -60,28 +63,23 @@ class CheckoutService extends Component
 
 		// TODO: merge with previously stored, incomplete carts if user is logged in?
 
-		if (!$this->_checkoutId)
-		{
-			$this->_checkoutId = Craft::$app->getSession()->get(self::CHECKOUT_KEY);
-
-			if ($this->_checkoutId)
-			{
-				$completed = (new Query())
-					->from('{{%storefront_checkouts}}')
-					->where([
-						'and',
-						['=', 'shopifyId', base64_decode($this->_checkoutId)],
-						['!=', 'dateCompleted', null],
-					])
-					->exists();
-
-				if ($completed)
-					$this->_checkoutId = null;
-			}
-		}
-
 		if (strpos($this->_checkoutId, 'gid://') !== false)
 			$this->_checkoutId = base64_encode($this->_checkoutId);
+
+		if ($this->_checkoutId)
+		{
+			$completed = (new Query())
+				->from('{{%storefront_checkouts}}')
+				->where([
+					'and',
+					['=', 'shopifyId', base64_decode($this->_checkoutId)],
+					['!=', 'dateCompleted', null],
+				])
+				->exists();
+
+			if ($completed)
+				$this->_checkoutId = null;
+		}
 
 		if ($this->_checkoutId)
 			return $this->_checkoutId;
@@ -413,7 +411,7 @@ GQL;
 	{
 		Storefront::getInstance()->relations->store(
 			$shopifyId,
-			RelationsService::TYPE_CHECKOUT,
+			ShopifyType::Checkout,
 			$elementId
 		);
 

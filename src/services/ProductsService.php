@@ -271,6 +271,7 @@ GQL;
 	 * @throws RuntimeError
 	 * @throws SyntaxError
 	 * @throws InvalidConfigException
+	 * @throws \yii\base\Exception
 	 */
 	public function addShopifyDetails (array &$context)
 	{
@@ -307,7 +308,10 @@ GQL;
 		if ($entry->getSection()->uid !== Storefront::getInstance()->getSettings()->productSectionUid)
 			return null;
 
-		return Storefront::getInstance()->relations->getShopifyIdByElementId($entry->id);
+		return Storefront::getInstance()->relations->getShopifyIdByElementId(
+			$entry->id,
+			ShopifyType::Product
+		);
 	}
 
 }

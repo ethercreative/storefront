@@ -251,7 +251,10 @@ GQL;
 		if ($category->getGroup()->uid !== Storefront::getInstance()->getSettings()->collectionCategoryGroupUid)
 			return null;
 
-		return Storefront::getInstance()->relations->getShopifyIdByElementId($category->id);
+		return Storefront::getInstance()->relations->getShopifyIdByElementId(
+			$category->id,
+			ShopifyType::Collection
+		);
 	}
 
 }

@@ -15,8 +15,8 @@
 - [x] Dynamically create / remove categories based on Shopify collections (categories disabled by default)
 - [x] Show a snippet of the product in a custom field in the entry (use this custom field to get shopify product data)
 - [x] Add shopify properties to product entries / collection categories (i.e. product.shopifyId)
-- [ ] Add twig tags / endpoints to show / update the Shopify "checkouts" (carts)
-- [ ] Tie craft users to Shopify customers (SSO?, checkoutCustomerAssociate)
+- [x] Add twig tags / endpoints to show / update the Shopify "checkouts" (carts)
+- [ ] Tie craft users to Shopify customers (SSO?, checkoutCustomerAssociate on login)
 
 #### Nice to have
 - [ ] Allow basic editing of Shopify products in craft (i.e. title)
@@ -34,6 +34,7 @@
 - Create Shopify private app
 - Enable Storefront API
 - "Products, variants and collections" Read / Write access
+- "Customer details and customer groups" Read / Write access
 - "Orders, transactions and fulfillments" Read / Write access
 
 ## Caveats

@@ -22,13 +22,6 @@ use yii\db\Exception;
 class RelationsService extends Component
 {
 
-	// Consts
-	// =========================================================================
-
-	const TYPE_PRODUCT = 'Product';
-	const TYPE_COLLECTION = 'Collection';
-	const TYPE_CHECKOUT = 'Checkout';
-
 	// Methods
 	// =========================================================================
 
@@ -66,6 +59,21 @@ class RelationsService extends Component
 	}
 
 	/**
+	 * Remove a stored relation by its Shopify ID
+	 *
+	 * @param string $shopifyId
+	 *
+	 * @throws Exception
+	 */
+	public function remove ($shopifyId)
+	{
+		Craft::$app->getDb()->createCommand()->delete(
+			'{{%storefront_relations}}',
+			compact('shopifyId')
+		)->execute();
+	}
+
+	/**
 	 * Gets the element ID for the given Shopify ID
 	 *
 	 * @param string $id
@@ -84,16 +92,21 @@ class RelationsService extends Component
 	/**
 	 * Gets the Shopify ID for the given element ID
 	 *
-	 * @param int $id
+	 * @param int    $id
+	 * @param string $type
 	 *
 	 * @return string|null
 	 */
-	public function getShopifyIdByElementId ($id)
+	public function getShopifyIdByElementId ($id, $type)
 	{
 		return (new Query())
-			->select('shopifyId')
-			->from('{{%storefront_relations_to_elements}}')
-			->where(['elementId' => $id])
+			->select('e.shopifyId')
+			->from('{{%storefront_relations_to_elements}} e')
+			->leftJoin('{{%storefront_relations}} r', '[[e.shopifyId]] = [[r.shopifyId]]')
+			->where([
+				'e.elementId' => $id,
+				'r.type' => $type,
+			])
 			->scalar();
 	}
 

@@ -53,9 +53,16 @@ class WebhookService extends Component
 			'COLLECTIONS_DELETE',
 
 			'ORDERS_CREATE',
+			'ORDERS_FULFILLED',
+			'ORDERS_PAID',
+			'ORDERS_UPDATED',
 
 			'CHECKOUTS_UPDATE',
 			'CHECKOUTS_DELETE',
+
+			'CUSTOMERS_CREATE',
+			'CUSTOMERS_UPDATE',
+			'CUSTOMERS_DELETE',
 		];
 
 		$existingHooks = $this->_getSavedWebhooks('hook');
@@ -213,13 +220,23 @@ GQL;
 				Storefront::getInstance()->collections->delete($json);
 				break;
 			case 'ORDERS_CREATE':
-				Storefront::getInstance()->orders->onCreate($json);
+			case 'ORDERS_FULFILLED':
+			case 'ORDERS_PAID':
+			case 'ORDERS_UPDATED':
+				Storefront::getInstance()->orders->upsert($json);
 				break;
 			case 'CHECKOUTS_UPDATE':
 				Storefront::getInstance()->checkout->onUpdate($json);
 				break;
 			case 'CHECKOUT_DELETE':
 				Storefront::getInstance()->checkout->delete($json);
+				break;
+			case 'CUSTOMERS_CREATE':
+			case 'CUSTOMERS_UPDATE':
+				Storefront::getInstance()->customers->upsert($json);
+				break;
+			case 'CUSTOMERS_DELETE':
+				Storefront::getInstance()->customers->delete($json);
 				break;
 		}
 	}

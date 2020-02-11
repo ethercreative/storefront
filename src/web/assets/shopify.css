@@ -118,3 +118,87 @@
 .shopify-sku {
 	font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
 }
+.shopify-stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	grid-gap: 24px;
+	list-style: none;
+}
+.shopify-stats li {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 24px;
+	box-shadow: 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
+	border-radius: 3px;
+}
+.shopify-stats span {
+	display: block;
+	margin-bottom: 7px;
+
+	color: #acb7c5;
+	font-weight: bold;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
+.shopify-stats strong {
+	font-size: 24px;
+}
+.shopify-stats-edit {
+	padding: 0 !important;
+	box-shadow: none !important;
+}
+.shopify-stats-edit a {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	padding: 24px;
+
+	color: #3f4d5a;
+	font-size: 18px;
+	text-decoration: none;
+
+	background-color: rgba(96, 125, 159, 0.25);
+	border-radius: 3px;
+}
+.shopify-stats-edit a:before {
+	margin-top: 1px !important;
+}
+.shopify-addresses {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 300px));
+	grid-gap: 24px;
+	list-style: none;
+}
+.shopify-addresses li {
+	padding: 24px;
+
+	border: 1px solid #eee;
+	border-radius: 3px;
+}
+.shopify-default {
+	position: relative;
+	border-color: #0D99F2 !important;
+}
+.shopify-default:after {
+	content: 'Default Address';
+	position: absolute;
+	top: 0;
+	right: -7px;
+
+	display: inline-block;
+	padding: 0 7px;
+
+	color: #fff;
+	font-size: 9px;
+	text-transform: uppercase;
+	font-weight: bold;
+
+	background-color: #0D99F2;
+	border-radius: 50px;
+
+	transform: translateY(-50%);
+}

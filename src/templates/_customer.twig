@@ -1,0 +1,185 @@
+{% do craft.app.view.registerAssetBundle('ether\\storefront\\web\\assets\\ShopifyAsset') %}
+
+<div id="storefront-tab-shopify" {% if not visible %}class="hidden"{% endif %}>
+	{# === Stats === #}
+	{% shopify stats with { id: id } as admin and cache %}
+	query GetCustomerStats ($id: ID!) {
+		customer (id: $id) {
+			totalSpentV2 {
+				amount
+				currencyCode
+			}
+			averageOrderAmountV2 {
+				amount
+				currencyCode
+			}
+			lifetimeDuration
+			ordersCount
+		}
+	}
+	{% endshopify %}
+	{% if 'errors' in stats|keys %}
+	<div class="shopify-wrap">
+		<h3 style="color:#da5a47">Something went wrong!</h3>
+		<ul class="errors">
+			{% for error in stats.errors %}
+				<li>{{ error.message }}</li>
+			{% endfor %}
+		</ul>
+	</div>
+	{% else %}
+		{% set stats = stats.data.customer %}
+		<ul class="shopify-stats">
+			<li>
+				<span># Orders</span>
+				<strong>{{ stats.ordersCount }}</strong>
+			</li>
+			<li>
+				<span>Total Spent</span>
+				<strong>{{ stats.totalSpentV2.amount|currency(stats.totalSpentV2.currencyCode) }}</strong>
+			</li>
+			<li>
+				<span>Average Order Amount</span>
+				{% if stats.averageOrderAmountV2 %}
+					<strong>{{ stats.averageOrderAmountV2.amount|currency(stats.averageOrderAmountV2.currencyCode) }}</strong>
+				{% else %}
+					<strong>N/A</strong>
+				{% endif %}
+			</li>
+			<li>
+				<span>Customer for</span>
+				<strong>{{ stats.lifetimeDuration }}</strong>
+			</li>
+			<li class="shopify-stats-edit">
+				<a
+					href="{{ craft.storefront.getCustomerEditUrl(id) }}"
+					class="btn secondary"
+					data-icon="share"
+					target="_blank" rel="noopener noreferrer"
+				>
+					View on Shopify
+				</a>
+			</li>
+		</ul>
+	{% endif %}
+
+	<hr>
+
+	{# === Orders === #}
+	{% shopify orders with { id: id } as admin and cache %}
+	query GetCustomerOrders ($id: ID!) {
+		customer (id: $id) {
+			ordersCount
+			orders (
+				first: 10
+				sortKey: CREATED_AT
+			) {
+				edges {
+					node {
+						id
+						name
+						displayFinancialStatus
+						displayFulfillmentStatus
+						createdAt
+						totalPriceSet {
+							shopMoney {
+								amount
+								currencyCode
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	{% endshopify %}
+	{% if 'errors' in orders|keys %}
+		<div class="shopify-wrap">
+			<h3 style="color:#da5a47">Something went wrong!</h3>
+			<ul class="errors">
+				{% for error in orders.errors %}
+					<li>{{ error.message }}</li>
+				{% endfor %}
+			</ul>
+		</div>
+	{% else %}
+		{% set ordersCount = orders.data.customer.ordersCount %}
+		{% set orders = orders.data.customer.orders.edges %}
+		<table class="data fullwidth collapsible">
+			<thead>
+			<tr>
+				<th>Order</th>
+				<th>Date</th>
+				<th>Payment</th>
+				<th>Fulfillment</th>
+				<th>Total</th>
+			</tr>
+			</thead>
+			<tbody>
+			{% for edge in orders %}
+				{% set order = edge.node %}
+				<tr>
+					<td>
+						<a href="{{ craft.storefront.getOrderEditUrl(order.id) }}" target="_blank" rel="noopener noreferrer">
+							{{ order.name }}
+						</a>
+					</td>
+					<td>{{ order.createdAt|date }}</td>
+					<td>{{ order.displayFinancialStatus|title|replace('_', ' ') }}</td>
+					<td>{{ order.displayFulfillmentStatus|title|replace('_', ' ') }}</td>
+					<td>{{ order.totalPriceSet.shopMoney.amount|currency(order.totalPriceSet.shopMoney.currencyCode) }}</td>
+				</tr>
+			{% endfor %}
+			</tbody>
+		</table>
+		{% set remaining = ordersCount - (orders|length) %}
+		{% if remaining > 0 %}
+			<p>
+				<a href="{{ craft.storefront.getOrderEditUrl('') }}" target="_blank" rel="noopener noreferrer">
+					And {{ remaining }} more order{{ remaining != 1 ? 's' }}
+				</a>
+			</p>
+		{% endif %}
+	{% endif %}
+
+	<hr>
+
+	{# === Addresses === #}
+	{% shopify addresses with { id: id } as admin and cache %}
+	query GetCustomerOrders ($id: ID!) {
+		customer (id: $id) {
+			defaultAddress {
+				id
+			}
+			addresses (first: 10) {
+				id
+				formatted (
+					withName: true
+					withCompany: true
+				)
+			}
+		}
+	}
+	{% endshopify %}
+	{% if 'errors' in addresses|keys %}
+	<div class="shopify-wrap">
+		<h3 style="color:#da5a47">Something went wrong!</h3>
+		<ul class="errors">
+			{% for error in addresses.errors %}
+				<li>{{ error.message }}</li>
+			{% endfor %}
+		</ul>
+	</div>
+	{% else %}
+		{% set defaultAddressId = addresses.data.customer.defaultAddress.id %}
+		{% set addresses = addresses.data.customer.addresses %}
+		<ul class="shopify-addresses">
+			{% for address in addresses %}
+				{% set isDefault = address.id == defaultAddressId %}
+				<li{% if isDefault %} class="shopify-default"{% endif %}>
+					{{ address.formatted|join('<br/>')|raw }}
+				</li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+</div>

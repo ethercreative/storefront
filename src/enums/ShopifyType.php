@@ -19,5 +19,7 @@ class ShopifyType
 
 	const Product = 'Product';
 	const Collection = 'Collection';
+	const Customer = 'Customer';
+	const Checkout = 'Checkout';
 
 }

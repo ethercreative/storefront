@@ -9,6 +9,7 @@
 namespace ether\storefront\services;
 
 use craft\base\Component;
+use ether\storefront\enums\ShopifyType;
 use ether\storefront\helpers\CacheHelper;
 
 /**
@@ -20,13 +21,18 @@ use ether\storefront\helpers\CacheHelper;
 class OrdersService extends Component
 {
 
-	public function onCreate (array $data)
+	public function upsert (array $data)
 	{
 		// Clear the caches for all products in the order to ensure our stock
 		// is up-to-date
 		foreach ($data['line_items'] as $item)
 			if ($item['product_exists'])
-				CacheHelper::clearCachesByShopifyId($item['product_id'], RelationsService::TYPE_PRODUCT);
+				CacheHelper::clearCachesByShopifyId($item['product_id'], ShopifyType::Product);
+
+		CacheHelper::clearCachesByShopifyId(
+			$data['customer']['id'],
+			ShopifyType::Customer
+		);
 	}
 
 }

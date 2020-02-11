@@ -49,6 +49,20 @@ class Variable
 		return $this->getShopUrl() . 'admin/collections/' . $id;
 	}
 
+	public function getCustomerEditUrl ($id)
+	{
+		$id = str_replace('gid://shopify/customer/', '', strtolower($id));
+
+		return $this->getShopUrl() . 'admin/customers/' . $id;
+	}
+
+	public function getOrderEditUrl ($id)
+	{
+		$id = str_replace('gid://shopify/order/', '', strtolower($id));
+
+		return $this->getShopUrl() . 'admin/orders/' . $id;
+	}
+
 	public function getOptionLabelsFromVariant ($variant)
 	{
 		$labels = [];
@@ -67,6 +81,11 @@ class Variable
 	public function getCheckoutId ()
 	{
 		return Storefront::getInstance()->checkout->getCheckoutId();
+	}
+
+	public function getCustomerId ()
+	{
+		return Storefront::getInstance()->customers->getCurrentUserCustomerId();
 	}
 
 }

@@ -30,6 +30,7 @@ use ether\storefront\helpers\CacheHelper;
 use ether\storefront\models\Settings;
 use ether\storefront\services\CheckoutService;
 use ether\storefront\services\CollectionsService;
+use ether\storefront\services\CustomersService;
 use ether\storefront\services\GraphService;
 use ether\storefront\services\OrdersService;
 use ether\storefront\services\ProductsService;
@@ -57,6 +58,7 @@ use yii\db\Expression;
  * @property CollectionsService $collections
  * @property RelationsService $relations
  * @property CheckoutService $checkout
+ * @property CustomersService $customers
  */
 class Storefront extends Plugin
 {
@@ -81,6 +83,7 @@ class Storefront extends Plugin
 			'orders' => OrdersService::class,
 			'collections' => CollectionsService::class,
 			'checkout' => CheckoutService::class,
+			'customers' => CustomersService::class,
 		]);
 
 		Craft::$app->getView()->registerTwigExtension(
@@ -122,6 +125,8 @@ class Storefront extends Plugin
 		// Edit Tabs
 		// ---------------------------------------------------------------------
 
+		// Entries
+
 		Craft::$app->view->hook('cp.entries.edit', function(array &$context) {
 			return $this->products->addShopifyTab($context);
 		});
@@ -130,12 +135,24 @@ class Storefront extends Plugin
 			return $this->products->addShopifyDetails($context);
 		});
 
+		// Categories
+
 		Craft::$app->view->hook('cp.categories.edit', function(array &$context) {
 			return $this->collections->addShopifyTab($context);
 		});
 
 		Craft::$app->view->hook('cp.categories.edit.content', function(array &$context) {
 			return $this->collections->addShopifyDetails($context);
+		});
+
+		// Users
+
+		Craft::$app->view->hook('cp.users.edit', function(array &$context) {
+			return $this->customers->addShopifyTab($context);
+		});
+
+		Craft::$app->view->hook('cp.users.edit.content', function(array &$context) {
+			return $this->customers->addShopifyDetails($context);
 		});
 	}
 
@@ -178,6 +195,7 @@ class Storefront extends Plugin
 	 * @throws LoaderError
 	 * @throws RuntimeError
 	 * @throws SyntaxError
+	 * @throws \yii\base\Exception
 	 */
 	protected function settingsHtml ()
 	{
