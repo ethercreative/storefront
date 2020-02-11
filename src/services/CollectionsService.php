@@ -215,6 +215,7 @@ GQL;
 	 * @throws RuntimeError
 	 * @throws SyntaxError
 	 * @throws InvalidConfigException
+	 * @throws \yii\base\Exception
 	 */
 	public function addShopifyDetails (array &$context)
 	{
@@ -227,7 +228,7 @@ GQL;
 			'storefront/_category',
 			[
 				'id' => $id,
-				'visible' => count($context['tabs']) === 1
+				'visible' => count($context['tabs'] ?: [0]) === 1
 			]
 		);
 	}

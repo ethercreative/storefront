@@ -284,7 +284,7 @@ GQL;
 			'storefront/_product',
 			[
 				'id' => $id,
-				'visible' => count($context['tabs']) === 1
+				'visible' => count($context['tabs'] ?: [0]) === 1
 			]
 		);
 	}

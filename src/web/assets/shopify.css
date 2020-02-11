@@ -89,7 +89,7 @@
 	border-top: 1px solid #e3e5e8;
 }
 .shopify-variants tr:hover td {
-	background-color: rgba(223,227,232,.3);
+	background-color: #f3f7fc;
 }
 .shopify-variants img {
 	width: 50px;
