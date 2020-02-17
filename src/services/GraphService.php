@@ -77,7 +77,7 @@ class GraphService extends Component
 	{
 		$client = $this->_client(
 			'X-Shopify-Access-Token',
-			$this->_settings()->shopifyAdminApiPassword,
+			Craft::parseEnv($this->_settings()->shopifyAdminApiPassword),
 			'admin/api/{version}/graphql.json'
 		);
 
@@ -97,7 +97,7 @@ class GraphService extends Component
 	{
 		$client = $this->_client(
 			'X-Shopify-Storefront-Access-Token',
-			$this->_settings()->shopifyStorefrontAccessToken,
+			Craft::parseEnv($this->_settings()->shopifyStorefrontAccessToken),
 			'api/{version}/graphql'
 		);
 
@@ -211,7 +211,7 @@ class GraphService extends Component
 		if (@$client[$tokenKey])
 			return $client[$tokenKey];
 
-		$shop = $this->_settings()->shopHandle;
+		$shop = Craft::parseEnv($this->_settings()->shopHandle);
 		$endPoint = str_replace('{version}', self::$API_VERSION, $endPoint);
 
 		$request = Craft::$app->getRequest();
