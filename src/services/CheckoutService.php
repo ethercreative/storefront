@@ -14,6 +14,7 @@ use craft\errors\MissingComponentException;
 use ether\storefront\enums\ShopifyType;
 use ether\storefront\helpers\CacheHelper;
 use ether\storefront\Storefront;
+use stdClass;
 use yii\db\Exception;
 use yii\db\Query;
 
@@ -377,7 +378,7 @@ GQL;
 			$email = $user->email;
 
 		$res = Storefront::getInstance()->graph->storefront($mutation, [
-			'input' => compact('email'),
+			'input' => $email ? compact('email') : new stdClass(),
 		]);
 
 		if (array_key_exists('errors', $res))
