@@ -362,7 +362,7 @@ class Storefront extends Plugin
 			return (
 				empty($query->sectionId)
 				|| $query->sectionId === $section->id
-				|| in_array($section->id, $query->sectionId)
+				|| (is_array($query->sectionId) && in_array($section->id, $query->sectionId))
 			);
 		}
 
