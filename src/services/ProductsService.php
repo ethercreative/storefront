@@ -16,6 +16,7 @@ use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\errors\ElementNotFoundException;
 use craft\helpers\StringHelper;
+use craft\models\CategoryGroup;
 use ether\storefront\enums\ShopifyType;
 use ether\storefront\helpers\CacheHelper;
 use ether\storefront\Storefront;
@@ -136,6 +137,10 @@ GQL;
 			$typeField = $fields->getFieldByUid(
 				$settings->typeCategoryFieldUid
 			);
+			/** @var CategoryGroup $typeCategoryGroup */
+			$typeCategoryGroup = Craft::$app->getCategories()->getGroupByUid(
+				$settings->typeCategoryGroupUid
+			);
 
 			$productType = $data['productType'];
 			$slug = StringHelper::slugify($productType);
@@ -145,6 +150,7 @@ GQL;
 			if (empty($typeCategory))
 			{
 				$typeCategory = new Category();
+				$typeCategory->groupId = $typeCategoryGroup->id;
 				$typeCategory->title = $productType;
 				$typeCategory->slug = $slug;
 
