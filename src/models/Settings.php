@@ -53,6 +53,17 @@ class Settings extends Model
 
 	/**
 	 * @var string The UID for the category group that will be automatically
+	 *             populated by the Shopify product type
+	 */
+	public $typeCategoryGroupUid = '';
+
+	/**
+	 * @var string The UID for the type category field on the product
+	 */
+	public $typeCategoryFieldUid = '';
+
+	/**
+	 * @var string The UID for the category group that will be automatically
 	 *             populated by Shopify collections
 	 */
 	public $collectionCategoryGroupUid = '';

@@ -11,6 +11,7 @@ namespace ether\storefront\services;
 use Craft;
 use craft\base\Component;
 use craft\base\Field;
+use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\errors\ElementNotFoundException;
@@ -41,6 +42,7 @@ fragment Product on Product {
 	title
 	handle
 	tags
+	productType
 	# TODO: It would be nice to get all collections, but setting first to 250 
 	#  exceeds the query cost :(
 	collections (first: \$collectionLimit) {
@@ -124,6 +126,33 @@ GQL;
 
 		$entry->title = $data['title'];
 		$entry->slug = $data['handle'];
+
+		// Content: Product Type
+		// ---------------------------------------------------------------------
+
+		if ($settings->typeCategoryGroupUid && $settings->typeCategoryFieldUid)
+		{
+			/** @var Field $typeField */
+			$typeField = $fields->getFieldByUid(
+				$settings->typeCategoryFieldUid
+			);
+
+			$productType = $data['productType'];
+			$slug = StringHelper::slugify($productType);
+
+			$typeCategory = Category::findOne(['slug' => $slug]);
+
+			if (empty($typeCategory))
+			{
+				$typeCategory = new Category();
+				$typeCategory->title = $productType;
+				$typeCategory->slug = $slug;
+
+				$elements->saveElement($typeCategory, false);
+			}
+
+			$entry->setFieldValue($typeField->handle, [$typeCategory->id]);
+		}
 
 		// Content: Collections
 		// ---------------------------------------------------------------------

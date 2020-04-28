@@ -46,6 +46,22 @@
 <h2>Field Mapping</h2>
 
 {{ forms.selectField({
+	label: 'Type Category Group',
+	instructions: 'The category group that will be automatically populated by Shopify product type',
+	name: 'typeCategoryGroupUid',
+	options: categoryGroupOptions,
+	value: settings.typeCategoryGroupUid,
+}) }}
+
+{{ forms.selectField({
+	label: 'Type Category Field',
+	instructions: 'The type category field on the products',
+	name: 'typeCategoryFieldUid',
+	options: categoryFieldOptions,
+	value: settings.typeCategoryFieldUid,
+}) }}
+
+{{ forms.selectField({
 	label: 'Collection Category Group',
 	instructions: 'The category group that will be automatically populated by Shopify collections',
 	name: 'collectionCategoryGroupUid',
