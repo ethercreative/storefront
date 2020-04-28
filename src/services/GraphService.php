@@ -211,7 +211,7 @@ class GraphService extends Component
 		if (@$client[$tokenKey])
 			return $client[$tokenKey];
 
-		$shop = Craft::parseEnv($this->_settings()->shopHandle);
+		$shop = $this->_settings()->getShopHandle();
 		$endPoint = str_replace('{version}', self::$API_VERSION, $endPoint);
 
 		$request = Craft::$app->getRequest();

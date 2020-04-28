@@ -23,7 +23,7 @@ class Variable
 
 	public function getShopUrl ()
 	{
-		$shop = Storefront::getInstance()->getSettings()->shopHandle;
+		$shop = Storefront::getInstance()->getSettings()->getShopHandle();
 
 		return 'https://' . $shop . '.myshopify.com/';
 	}

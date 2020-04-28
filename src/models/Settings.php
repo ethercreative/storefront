@@ -71,6 +71,16 @@ class Settings extends Model
 	// =========================================================================
 
 	/**
+	 * Gets the shop handle, parsing any variables
+	 *
+	 * @return bool|string|null
+	 */
+	public function getShopHandle ()
+	{
+		return Craft::parseEnv($this->shopHandle);
+	}
+
+	/**
 	 * Gets the products section
 	 *
 	 * @return Section|null
