@@ -376,7 +376,7 @@ class Storefront extends Plugin
 			return (
 				empty($query->groupId)
 				|| $query->groupId === $group->id
-				|| in_array($group->id, $query->groupId)
+				|| (is_array($query->groupId) && in_array($group->id, $query->groupId))
 			);
 		}
 
