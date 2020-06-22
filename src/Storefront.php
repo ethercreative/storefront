@@ -162,8 +162,7 @@ class Storefront extends Plugin
 	 */
 	protected function beforeUninstall (): bool
 	{
-		if (!$this->webhook->uninstall())
-			return false;
+		$this->webhook->uninstall();
 
 		return parent::beforeUninstall();
 	}
