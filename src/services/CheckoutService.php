@@ -82,6 +82,27 @@ class CheckoutService extends Component
 				$this->_checkoutId = null;
 		}
 
+		$query = <<<GQL
+query GetCheckout ($id: ID!) {
+    node (id: $id) {
+        ...on Checkout {
+            lineItems (first: 1) {
+                edges {
+                    cursor
+                }
+            }
+        }
+    }
+}
+GQL;
+
+		$res = Storefront::getInstance()->graph->storefront($query, [
+			'checkoutId' => $id,
+		]);
+
+		if (array_key_exists('errors', $res) || $res['node'] === null)
+			$this->_checkoutId = null;
+
 		if ($this->_checkoutId)
 			return $this->_checkoutId;
 
@@ -159,8 +180,8 @@ GQL;
 		if (array_key_exists('errors', $res))
 			return $res['errors'];
 
-		if (!empty($res['add']['userErrors']))
-			return $res['add']['userErrors'];
+		if (!empty($res['data']['add']['userErrors']))
+			return $res['data']['add']['userErrors'];
 
 		$this->onUpdate(['id' => $id]);
 		return null;
@@ -207,8 +228,8 @@ GQL;
 		if (array_key_exists('errors', $res))
 			return $res['errors'];
 
-		if (!empty($res['update']['userErrors']))
-			return $res['update']['userErrors'];
+		if (!empty($res['data']['update']['userErrors']))
+			return $res['data']['update']['userErrors'];
 
 		$this->onUpdate(['id' => $id]);
 		return null;
@@ -251,8 +272,8 @@ GQL;
 		if (array_key_exists('errors', $res))
 			return $res['errors'];
 
-		if (!empty($res['remove']['userErrors']))
-			return $res['remove']['userErrors'];
+		if (!empty($res['data']['remove']['userErrors']))
+			return $res['data']['remove']['userErrors'];
 
 		$this->onUpdate(['id' => $id]);
 		return null;
@@ -299,8 +320,8 @@ GQL;
 		if (array_key_exists('errors', $res))
 			return $res['errors'];
 
-		if (!empty($res['apply']['checkoutUserErrors']))
-			return $res['apply']['checkoutUserErrors'];
+		if (!empty($res['data']['apply']['checkoutUserErrors']))
+			return $res['data']['apply']['checkoutUserErrors'];
 
 		$this->onUpdate(['id' => $id]);
 		return null;
@@ -339,8 +360,8 @@ GQL;
 		if (array_key_exists('errors', $res))
 			return $res['errors'];
 
-		if (!empty($res['remove']['checkoutUserErrors']))
-			return $res['remove']['checkoutUserErrors'];
+		if (!empty($res['data']['remove']['checkoutUserErrors']))
+			return $res['data']['remove']['checkoutUserErrors'];
 
 		$this->onUpdate(['id' => $id]);
 		return null;
