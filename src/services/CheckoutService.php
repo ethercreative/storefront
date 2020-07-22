@@ -82,9 +82,10 @@ class CheckoutService extends Component
 				$this->_checkoutId = null;
 		}
 
-		$query = <<<GQL
-query GetCheckout ($id: ID!) {
-    node (id: $id) {
+		if ($this->_checkoutId) {
+			$query = <<<GQL
+query GetCheckout (\$id: ID!) {
+    node (id: \$id) {
         ...on Checkout {
             lineItems (first: 1) {
                 edges {
@@ -96,12 +97,13 @@ query GetCheckout ($id: ID!) {
 }
 GQL;
 
-		$res = Storefront::getInstance()->graph->storefront($query, [
-			'checkoutId' => $id,
-		]);
+			$res = Storefront::getInstance()->graph->storefront($query, [
+				'id' => $this->_checkoutId,
+			]);
 
-		if (array_key_exists('errors', $res) || $res['node'] === null)
-			$this->_checkoutId = null;
+			if (array_key_exists('errors', $res) || $res['data']['node'] === null)
+				$this->_checkoutId = null;
+		}
 
 		if ($this->_checkoutId)
 			return $this->_checkoutId;
@@ -130,9 +132,9 @@ GQL;
 	{
 		CacheHelper::clearCheckoutCaches($data['id']);
 		Craft::$app->getDb()->createCommand()
-			->delete('{{%storefront_checkouts}}', [
-				'shopifyId' => base64_decode($data['id']),
-			])->execute();
+		           ->delete('{{%storefront_checkouts}}', [
+			           'shopifyId' => base64_decode($data['id']),
+		           ])->execute();
 	}
 
 	// Line Items
@@ -438,9 +440,9 @@ GQL;
 		);
 
 		Craft::$app->getDb()->createCommand()
-			->insert('{{%storefront_checkouts}}', [
-				'shopifyId' => $shopifyId,
-			], false)->execute();
+		           ->insert('{{%storefront_checkouts}}', [
+			           'shopifyId' => $shopifyId,
+		           ], false)->execute();
 	}
 
 }
