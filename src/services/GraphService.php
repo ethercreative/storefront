@@ -37,7 +37,7 @@ use GuzzleHttp\Client;
 class GraphService extends Component
 {
 
-	private static $API_VERSION = '2020-01';
+	private static $API_VERSION = '2020-07';
 
 	// Public
 	// =========================================================================

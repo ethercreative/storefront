@@ -440,9 +440,9 @@ GQL;
 		);
 
 		Craft::$app->getDb()->createCommand()
-		           ->insert('{{%storefront_checkouts}}', [
-			           'shopifyId' => $shopifyId,
-		           ], false)->execute();
+			->insert('{{%storefront_checkouts}}', [
+			   'shopifyId' => $shopifyId,
+			], false)->execute();
 	}
 
 }
