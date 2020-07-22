@@ -107,11 +107,9 @@ GQL;
 		$entryId = $relations->getElementIdByShopifyId($id);
 
 		if ($entryId)
-		{
 			$entry = Craft::$app->getEntries()->getEntryById($entryId);
-		}
-		else
-		{
+
+		if (empty($entry)) {
 			$section = Craft::$app->getSections()->getSectionByUid(
 				$settings->productSectionUid
 			);
