@@ -115,10 +115,16 @@ GQL;
 	 * Called whenever a checkout is updated
 	 *
 	 * @param array $data
+	 *
+	 * @throws Exception
 	 */
 	public function onUpdate ($data)
 	{
 		CacheHelper::clearCheckoutCaches($data['id']);
+
+		// If the checkout is completed, delete it (since it's an order now)
+		if ($data['completed_at'] !== null)
+			$this->delete($data);
 	}
 
 	/**
