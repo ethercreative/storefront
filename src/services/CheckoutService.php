@@ -123,7 +123,7 @@ GQL;
 		CacheHelper::clearCheckoutCaches($data['id']);
 
 		// If the checkout is completed, delete it (since it's an order now)
-		if ($data['completed_at'] !== null)
+		if (@$data['completed_at'] !== null)
 			$this->delete($data);
 	}
 
