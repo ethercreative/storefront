@@ -375,6 +375,106 @@ GQL;
 		return null;
 	}
 
+	// Attributes
+	// =========================================================================
+
+	/**
+	 * Sets the customer note on the checkout
+	 *
+	 * @param string $note
+	 *
+	 * @return mixed|null
+	 * @throws Exception
+	 * @throws MissingComponentException
+	 */
+	public function setNote ($note)
+	{
+		$query = <<<GQL
+mutation SetCheckoutNote (
+	\$checkoutId: ID!
+	\$note: String
+) {
+	set: checkoutAttributesUpdateV2 (
+		checkoutId: \$checkoutId
+		input: {
+			note: \$note
+		}
+	) {
+		checkoutUserErrors {
+			message
+			field
+			code
+		}
+	}
+}
+GQL;
+
+		$id = $this->getCheckoutId();
+		$res = Storefront::getInstance()->graph->storefront($query, [
+			'checkoutId' => $id,
+			'note' => $note,
+		]);
+
+		if (array_key_exists('errors', $res))
+			return $res['errors'];
+
+		if (!empty($res['data']['remove']['checkoutUserErrors']))
+			return $res['data']['remove']['checkoutUserErrors'];
+
+		$this->onUpdate(['id' => $id]);
+		return null;
+	}
+
+	/**
+	 * @param array $attributes - An array of key value pairs
+	 *
+	 * @return mixed|null
+	 * @throws Exception
+	 * @throws MissingComponentException
+	 */
+	public function setCustomAttributes ($attributes)
+	{
+		$query = <<<GQL
+mutation SetCheckoutAttribute (
+	\$checkoutId: ID!
+	\$customAttributes: [AttributeInput!]
+) {
+	set: checkoutAttributesUpdateV2 (
+		checkoutId: \$checkoutId
+		input: {
+			customAttributes: \$customAttributes
+		}
+	) {
+		checkoutUserErrors {
+			message
+			field
+			code
+		}
+	}
+}
+GQL;
+
+		$customAttributes = [];
+
+		foreach ($attributes as $key => $value)
+			$customAttributes[] = compact('key', 'value');
+
+		$id = $this->getCheckoutId();
+		$res = Storefront::getInstance()->graph->storefront($query, [
+			'checkoutId' => $id,
+			'customAttributes' => $customAttributes,
+		]);
+
+		if (array_key_exists('errors', $res))
+			return $res['errors'];
+
+		if (!empty($res['data']['remove']['checkoutUserErrors']))
+			return $res['data']['remove']['checkoutUserErrors'];
+
+		$this->onUpdate(['id' => $id]);
+		return null;
+	}
+
 	// Private
 	// =========================================================================
 

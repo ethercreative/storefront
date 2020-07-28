@@ -145,4 +145,47 @@ class CheckoutController extends Controller
 		return null;
 	}
 
+	// Attributes
+	// =========================================================================
+
+	/**
+	 * Set the note on the checkout
+	 *
+	 * @return null
+	 * @throws BadRequestHttpException
+	 * @throws Exception
+	 * @throws MissingComponentException
+	 */
+	public function actionSetNote ()
+	{
+		$note = Craft::$app->getRequest()->getRequiredBodyParam('note');
+
+		if ($errors = Storefront::getInstance()->checkout->setNote($note))
+			Craft::$app->getUrlManager()->setRouteParams([
+				'variables' => ['errors' => $errors],
+			]);
+
+		return null;
+	}
+
+	/**
+	 * Set the custom attributes on the checkout
+	 *
+	 * @return null
+	 * @throws BadRequestHttpException
+	 * @throws Exception
+	 * @throws MissingComponentException
+	 */
+	public function actionSetCustomAttributes ()
+	{
+		$attributes = Craft::$app->getRequest()->getRequiredBodyParam('attributes');
+
+		if ($errors = Storefront::getInstance()->checkout->setCustomAttributes($attributes))
+			Craft::$app->getUrlManager()->setRouteParams([
+				'variables' => ['errors' => $errors],
+			]);
+
+		return null;
+	}
+
 }
