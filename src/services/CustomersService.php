@@ -246,9 +246,11 @@ GQL;
 	/**
 	 * Checks if the current user is logged in
 	 *
-	 * @return bool
+	 * @param bool $returnId - Return the ID of the customer
+	 *
+	 * @return bool|string
 	 */
-	public function isLoggedIn ()
+	public function isLoggedIn ($returnId = false)
 	{
 		$token = Craft::$app->getRequest()->getCookies()->getValue(self::AUTH_KEY);
 
@@ -270,7 +272,20 @@ GQL;
 		if (array_key_exists('errors', $res))
 			return false;
 
-		return !empty(@$res['data']['customer']['id']);
+		if (empty(@$res['data']['customer']['id']))
+			return false;
+
+		return $returnId ? @$res['data']['customer']['id'] : true;
+	}
+
+	/**
+	 * Returns the customer ID or null
+	 *
+	 * @return null|string
+	 */
+	public function getCustomerId ()
+	{
+		return $this->isLoggedIn(true) ?: null;
 	}
 
 	// Helpers

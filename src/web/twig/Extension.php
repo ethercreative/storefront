@@ -8,8 +8,10 @@
 
 namespace ether\storefront\web\twig;
 
+use ether\storefront\Storefront;
 use ether\storefront\web\twig\tokenparsers\ShopifyTokenParser;
 use Twig\Extension\AbstractExtension;
+use Twig\Extension\GlobalsInterface;
 
 /**
  * Class Extension
@@ -17,13 +19,20 @@ use Twig\Extension\AbstractExtension;
  * @author  Ether Creative
  * @package ether\storefront\web\twig
  */
-class Extension extends AbstractExtension
+class Extension extends AbstractExtension implements GlobalsInterface
 {
 
 	public function getTokenParsers ()
 	{
 		return [
 			new ShopifyTokenParser(),
+		];
+	}
+
+	public function getGlobals ()
+	{
+		return [
+			'currentCustomerId' => Storefront::getInstance()->customers->getCustomerId(),
 		];
 	}
 
