@@ -17,6 +17,7 @@ use ether\storefront\Storefront;
 use stdClass;
 use yii\db\Exception;
 use yii\db\Query;
+use yii\web\Cookie;
 
 /**
  * Class CheckoutService
@@ -52,7 +53,7 @@ class CheckoutService extends Component
 		if ($this->_checkoutId)
 			return $this->_checkoutId;
 
-		$this->_checkoutId = Craft::$app->getSession()->get(self::CHECKOUT_KEY);
+		$this->_checkoutId = Craft::$app->getRequest()->getCookies()->getValue(self::CHECKOUT_KEY);
 
 		if ($id = Craft::$app->getUser()->getId() && !$this->_checkoutId)
 			$this->_checkoutId = (new Query())
@@ -137,10 +138,11 @@ GQL;
 	public function delete ($data)
 	{
 		CacheHelper::clearCheckoutCaches($data['id']);
+		Craft::$app->getRequest()->getCookies()->remove(self::CHECKOUT_KEY);
 		Craft::$app->getDb()->createCommand()
-		           ->delete('{{%storefront_checkouts}}', [
-			           'shopifyId' => base64_decode($data['id']),
-		           ])->execute();
+			->delete('{{%storefront_checkouts}}', [
+				'shopifyId' => base64_decode($data['id']),
+			])->execute();
 	}
 
 	// Line Items
@@ -523,7 +525,13 @@ GQL;
 		}
 
 		$this->_checkoutId = $res['data']['checkoutCreate']['checkout']['id'];
-		Craft::$app->getSession()->set(self::CHECKOUT_KEY, $this->_checkoutId);
+
+		$cookie = new Cookie([
+			'name' => self::CHECKOUT_KEY,
+			'value' => $this->_checkoutId,
+			'expire' => 3600000*24*14, // 14 days
+		]);
+		Craft::$app->getRequest()->getCookies()->add($cookie);
 
 		$shopifyId = base64_decode($this->_checkoutId);
 		$this->store($shopifyId, $user ? $user->id : null);
