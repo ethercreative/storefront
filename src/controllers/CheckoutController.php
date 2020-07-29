@@ -49,7 +49,7 @@ class CheckoutController extends Controller
 				'variables' => ['errors' => $errors],
 			]);
 
-		return null;
+		return $this->redirectToPostedUrl();
 	}
 
 	/**

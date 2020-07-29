@@ -484,7 +484,6 @@ GQL;
 	 * Creates a new checkout
 	 *
 	 * @return string|null
-	 * @throws MissingComponentException
 	 * @throws Exception
 	 */
 	private function createCheckout ()
@@ -529,7 +528,7 @@ GQL;
 		$cookie = new Cookie([
 			'name' => self::CHECKOUT_KEY,
 			'value' => $this->_checkoutId,
-			'expire' => 3600000*24*14, // 14 days
+			'expire' => time()+60*60*24*14, // 14 days
 		]);
 		Craft::$app->getRequest()->getCookies()->add($cookie);
 
