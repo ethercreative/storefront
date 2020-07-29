@@ -252,6 +252,9 @@ GQL;
 	 */
 	public function isLoggedIn ($returnId = false)
 	{
+		if (Craft::$app->getRequest()->getIsConsoleRequest())
+			return false;
+
 		$token = Craft::$app->getRequest()->getCookies()->getValue(self::AUTH_KEY);
 
 		if (!$token)
