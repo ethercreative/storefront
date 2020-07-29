@@ -211,7 +211,7 @@ GQL;
 			'value' => $this->_authToken,
 			'expires' => (new DateTime($expiresAt))->getTimestamp(),
 		]);
-		Craft::$app->getRequest()->getCookies()->add($cookie);
+		Craft::$app->getResponse()->getCookies()->add($cookie);
 
 		return null;
 	}
@@ -240,7 +240,7 @@ GQL;
 			Storefront::getInstance()->graph->storefront($query, compact('token'));
 		}
 
-		Craft::$app->getRequest()->getCookies()->remove(self::AUTH_KEY);
+		Craft::$app->getResponse()->getCookies()->remove(self::AUTH_KEY);
 	}
 
 	/**

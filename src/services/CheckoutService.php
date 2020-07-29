@@ -138,7 +138,7 @@ GQL;
 	public function delete ($data)
 	{
 		CacheHelper::clearCheckoutCaches($data['id']);
-		Craft::$app->getRequest()->getCookies()->remove(self::CHECKOUT_KEY);
+		Craft::$app->getResponse()->getCookies()->remove(self::CHECKOUT_KEY);
 		Craft::$app->getDb()->createCommand()
 			->delete('{{%storefront_checkouts}}', [
 				'shopifyId' => base64_decode($data['id']),
@@ -530,7 +530,7 @@ GQL;
 			'value' => $this->_checkoutId,
 			'expire' => time()+60*60*24*14, // 14 days
 		]);
-		Craft::$app->getRequest()->getCookies()->add($cookie);
+		Craft::$app->getResponse()->getCookies()->add($cookie);
 
 		$shopifyId = base64_decode($this->_checkoutId);
 		$this->store($shopifyId, $user ? $user->id : null);
